@@ -24,9 +24,9 @@ This blog post aims to provide a way to easily setup Wazuh monitoring on a perso
 
 **dangerous-commands**: In here are defined the commands you want watch for being executed in the terminal since auditd with the rules set is watching for all commands here you define the ones you are on the lookout for. e.g. whoami for situational awareness. Be creative add any you might think are of use for you.
 
-**sca_detect_linux_keylogger.yml**: This is a custom Security Configuration Assessment (SCA) policy file designed to detect keyloggers on Linux endpoints taken from this post https://wazuh.com/blog/detecting-keyloggers-on-linux-endpoints/
+**sca_detect_linux_keylogger.yml**: This is a custom Security Configuration Assessment (SCA) policy file designed to detect keyloggers on Linux endpoints taken from this post <https://wazuh.com/blog/detecting-keyloggers-on-linux-endpoints/>
 
- **custom-discord && custom-discord.py**: These are used for discord integration to send alerts. To use these you just need to put the url for you discord webhook in the ossec.conf. If you are new to webhooks here is a simple guide from discord https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks. Note you will need to make your own discord server.
+ **custom-discord && custom-discord.py**: These are used for discord integration to send alerts. To use these you just need to put the url for you discord webhook in the ossec.conf. If you are new to webhooks here is a simple guide from discord <https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks>. Note you will need to make your own discord server.
 
 **agent.conf**: This is the config file for the agent your host
 
@@ -308,7 +308,7 @@ You can also Add this to your `~/.zshrc`:
 export HISTCONTROL=ignorespace
 ```
 
-Then any command prefixed with a space won't be saved to history when using cli.
+Then any command prefixed with a space won't be saved to history when using cli so the passwords used won't be stored.
 
 
 
@@ -320,7 +320,7 @@ When making any changes to the configs I recommend making them in your Configs d
 
 
 
-You are going to want to create a retention policy to delete your logs after 30 days to save disk space. For personal use this is enough you are not obligated by any laws to retain them like in enterprise and after 30 days I think it's safe to say you don't need them. Here is link with a simple guide from wazuh official docs for creating it https://documentation.wazuh.com/current/user-manual/wazuh-indexer-cluster/index-lifecycle-management.html .
+You are going to want to create a retention policy to delete your logs after 30 days to save disk space. For personal use this is enough you are not obligated by any laws to retain them like in enterprise and after 30 days I think it's safe to say you don't need them. Here is link with a simple guide from wazuh official docs for creating it <https://documentation.wazuh.com/current/user-manual/wazuh-indexer-cluster/index-lifecycle-management.html> .
 
 
 
@@ -364,7 +364,7 @@ If you remove containers with **docker compose down -v** you will need to re-enr
 
 This was done on Arch Linux but it can be applied on Ubuntu or any other distro just as well with minimum modifications needed.
 
-All the necessary config files can be found in my github repo https://github.com/heeeyaaaa/wazuh-homelab
+All the necessary config files can be found in my github repo <https://github.com/heeeyaaaa/wazuh-homelab>
 
 Running wazuh in docker this way makes it a practical portable solution easy to setup other devices or in event of system rebuilding.
 
