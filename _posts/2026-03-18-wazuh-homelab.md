@@ -3,7 +3,6 @@ title: System monitoring with Wazuh
 date: 2026-03-18
 categories: [Homelab, Setup]
 tags: [wazuh, siem, auditd, docker, arch-linux, monitoring]
-permalink: /posts/wazuh-homelab/
 ---
 
 
