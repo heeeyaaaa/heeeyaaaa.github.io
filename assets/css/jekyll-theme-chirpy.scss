@@ -1,0 +1,74 @@
+---
+---
+@use 'main{%- if jekyll.environment == 'production' -%}.bundle{%- endif -%}';
+
+/* append your custom style below */
+
+:root[data-bs-theme="dark"] {
+  --main-bg: #1a1b26;
+  --sidebar-bg: #16161e;
+  --card-bg: #24283b;
+  --main-border-color: #2f334d;
+  --link-color: #7aa2f7;
+  --topbar-bg: rgb(26 27 38 / 70%);
+  --timeline-color: #2f334d;
+  --timeline-node-bg: #565f89;
+  --card-header-bg: #1f2335;
+  --categories-border: rgb(47 51 77 / 60%);
+  --categories-hover-bg: #2f3549;
+  --sidebar-hover-bg: #1f2335;
+  --sidebar-btn-bg: #1f2335;
+  --sidebar-border-color: #2f334d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-bs-theme]) {
+    --main-bg: #1a1b26;
+    --sidebar-bg: #16161e;
+    --card-bg: #24283b;
+    --main-border-color: #2f334d;
+    --link-color: #7aa2f7;
+    --topbar-bg: rgb(26 27 38 / 70%);
+    --timeline-color: #2f334d;
+    --timeline-node-bg: #565f89;
+    --card-header-bg: #1f2335;
+    --categories-border: rgb(47 51 77 / 60%);
+    --categories-hover-bg: #2f3549;
+    --sidebar-hover-bg: #1f2335;
+    --sidebar-btn-bg: #1f2335;
+    --sidebar-border-color: #2f334d;
+  }
+}
+
+:root[data-bs-theme="light"] {
+  --main-bg: #edeef3;
+  --sidebar-bg: #e4e6ee;
+  --card-bg: #f0f1f6;
+  --main-border-color: #c9ccd9;
+  --link-color: #2e7de9;
+  --topbar-bg: rgb(237 238 243 / 70%);
+  --timeline-color: rgb(0 0 0 / 7.5%);
+  --timeline-node-bg: #a9aec4;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-bs-theme]) {
+    --main-bg: #edeef3;
+    --sidebar-bg: #e4e6ee;
+    --card-bg: #f0f1f6;
+    --main-border-color: #c9ccd9;
+    --link-color: #2e7de9;
+    --topbar-bg: rgb(237 238 243 / 70%);
+    --timeline-color: rgb(0 0 0 / 7.5%);
+    --timeline-node-bg: #a9aec4;
+  }
+}
+
+/* Theme paints alternating archive rows with a hardcoded gradient,
+   including a higher-specificity dark-mode variant. Kill both. */
+:root[data-bs-theme="dark"] #archives ul li:nth-child(odd),
+:root[data-bs-theme="light"] #archives ul li:nth-child(odd),
+:root:not([data-bs-theme]) #archives ul li:nth-child(odd) {
+  background-image: none;
+  background-color: var(--card-bg);
+}

