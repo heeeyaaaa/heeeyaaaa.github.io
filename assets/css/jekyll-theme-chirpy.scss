@@ -19,6 +19,9 @@
   --sidebar-hover-bg: #1f2335;
   --sidebar-btn-bg: #1f2335;
   --sidebar-border-color: #2f334d;
+  --tb-odd-bg: #1f2335;
+  --tb-even-bg: #1a1b26;
+  --tb-border-color: #2f334d;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -37,6 +40,9 @@
     --sidebar-hover-bg: #1f2335;
     --sidebar-btn-bg: #1f2335;
     --sidebar-border-color: #2f334d;
+    --tb-odd-bg: #1f2335;
+    --tb-even-bg: #1a1b26;
+    --tb-border-color: #2f334d;
   }
 }
 
