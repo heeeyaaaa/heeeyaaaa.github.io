@@ -51,6 +51,22 @@ The `scan_on_start: yes` on syscollector and syscheck means you get an immediate
 
 
 
+
+
+**Update ( Aug 2026): **
+
+- I added reverse shell detection rules to both wazuh-command.rules and local_rules.xml
+
+- I also added screen capture detection which works with a systemd watcher service. The service file **screencast-watch.service** and service script **screecast-watch.sh** are now added to the github repo along with the decoder config **local_decoder.xml** for the logs from the service. The watcher makes a log file in **/var/log/screencast/events.log** that's now added to the agent.conf.
+
+  The watcher polls the PipeWire graph and fires whenever an application requests screen or window capture through the desktop portal (`xdg-desktop-portal-hyprland`), which shows up as an `xdph-streaming` source node. Because every portal-mediated capture passes through that same node regardless of the requesting app, one condition covers OBS, Vesktop, browsers,  and anything else that captures the screen or another window. It tracks which apps are consuming the stream, so simultaneous captures each raise their own START/STOP event, and forwards them through the Wazuh agent to fire an alert. 
+
+  **note:** The detection lines up with the portal, which happens to line up well with actual risk. Whole-screen and window captures go through the portal and are caught. A browser sharing one of its *own* tabs is not, because Chromium captures tab content internally and never touches the portal or PipeWire, a low-risk case, since the browser can already see its own tabs.
+
+  
+
+   
+
 ## Setup and installation 
 
 Install Docker and auditd:
@@ -212,6 +228,7 @@ In the docker-compose.yml add these lines under volumes for the manager service.
 
 ```bash
 - ./config/wazuh_cluster/rules/local_rules.xml:/var/ossec/etc/rules/local_rules.xml
+- ./config/wazuh_cluster/local_decoder.xml:/var/ossec/etc/decoders/local_decoder.xml
 - ./config/wazuh_cluster/rules/wazuh-command.rules:/var/ossec/etc/rules/wazuh-command.rules
 - ./config/wazuh_cluster/rules/dangerous-commands:/var/ossec/etc/lists/dangerous-commands
 - ./config/wazuh_cluster/integrations/custom-discord:/var/ossec/integrations/custom-discord
@@ -221,6 +238,29 @@ In the docker-compose.yml add these lines under volumes for the manager service.
 ```
 
 ![Mountpoints](/assets/img/posts/wazuh-homelab/mountpoints.png)
+
+
+
+Add the watcher service for detecting screensharing
+
+```bash
+cp  screencast-watch.sh ~/.local/bin/screencast-watch.sh
+cp screencast-watch.service ~/.config/systemd/user/screencast-watch.service
+```
+
+```bash
+sudo mkdir -p /var/log/screencast
+sudo chown <YOUR USER>:<YOUR USER> /var/log/screencast
+```
+
+Load and enable the service
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now screencast-watch.service
+```
+
+
 
 
 
