@@ -55,7 +55,7 @@ The `scan_on_start: yes` on syscollector and syscheck means you get an immediate
 
 **Update ( Aug 2026): **
 
-- I added reverse shell detection rules to both wazuh-command.rules and local_rules.xml
+- I added reverse shell detection rules to both wazuh-command.rules and local_rules.xml. The rule for python uses the binary with the version number so when it updates you will need to chnage it. Also you will want to add suppresion rules for any python based apps like proton pvn, there is an example rule included.
 
 - I also added screen capture detection which works with a systemd watcher service. The service file **screencast-watch.service** and service script **screecast-watch.sh** are now added to the github repo along with the decoder config **local_decoder.xml** for the logs from the service. The watcher makes a log file in **/var/log/screencast/events.log** that's now added to the agent.conf.
 
