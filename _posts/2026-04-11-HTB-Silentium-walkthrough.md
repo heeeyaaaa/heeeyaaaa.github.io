@@ -1,7 +1,7 @@
 ---
 title: "HTB Silentium walkthrough"
 date: 2026-04-11 
-categories: [HackTheBox, Season 10]
+categories: [HTB, Season 10]
 tags: [htb, flowise, gogs, cve-2025-58434, cve-2025-59528, cve-2025-8110, docker, linux]
 ---
 
