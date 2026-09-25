@@ -55,7 +55,15 @@ The `scan_on_start: yes` on syscollector and syscheck means you get an immediate
 
 **Update ( Aug 2026):**
 
-- I added reverse shell detection rules to both wazuh-command.rules and local_rules.xml. The rule for python uses the binary with the version number so when it updates you will need to chnage it. Also you will want to add suppresion rules for any python based apps like proton pvn, there is an example rule included.
+- I added reverse shell detection rules to both wazuh-command.rules and local_rules.xml. The rule for python uses the binary with the version number so when it updates you will need to change it.
+
+  **Sep 2026:** The first version of the python rules was way too noisy. It alerted on every socket python opened, including local ones for D-Bus and DNS, so any python app like ProtonVPN made 2-4 critical alerts per request and needed suppression rules. Those suppression rules are now removed and the python detection works differently:
+
+  - auditd now only logs python IPv4/IPv6 sockets (key `python_net`) and python redirecting stdin with `dup2` (key `python_revshell`), which is what `os.dup2(s.fileno(),0)` in a reverse shell does.
+  - Both of these on their own are normal (pip, ProtonVPN, `subprocess`, `pty`), so rule 100803 only logs them at level 3.
+  - Rule 100804 fires at level 15 when the **same process** does both within 30 seconds. Normal `subprocess` and `pty` code does its `dup2` in a new child process with a different pid, so it doesn't match.
+
+  **note:** Don't add level 0 suppression rules under 100803 for noisy python apps, the event then never counts towards 100804 so a reverse shell in that app would be missed. A shell started with `subprocess(..., stdin=s)` also isn't caught at level 15 since the `dup2` happens in the child process, it only shows up as level 3.
 
 - I also added screen capture detection which works with a systemd watcher service. The service file **screencast-watch.service** and service script **screecast-watch.sh** are now added to the github repo along with the decoder config **local_decoder.xml** for the logs from the service. The watcher makes a log file in **/var/log/screencast/events.log** that's now added to the agent.conf.
 
