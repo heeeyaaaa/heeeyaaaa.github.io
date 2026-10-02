@@ -30,7 +30,7 @@ To find the subject of the email we can simply cat the provided eml file of the 
 
 We are provided with a vhdx file which we simply mount in our windows VM to further analyze it's contents. To find the answer to task 2 we need to examine the browser artifacts which in this case is edge. We can do that with sqlecmd from EZ tools. 
 
-```cmd
+```console
 C:\Users\Flare\Desktop\net9\SQLECmd>sqlecmd.exe -d "E:\C\Users\cyberjunkie\AppData\Local\Microsoft\Edge\User Data\Default" --csv "C:\Users\Flare\Desktop\fruitzy\parsed"
 SQLECmd version 1.1.0.0
 
