@@ -1,7 +1,7 @@
 ---
 title: "HTB Variatype walkthrough"
 date: 2026-03-14
-categories: [HTB, Season 10]
+categories: [HTB, Machines, Season 10]
 tags:  [fonttools, CVE-2025-66034, CVE-2024-25082, CVE-2025-47273, path-traversal, php-webshell]
 ---
 

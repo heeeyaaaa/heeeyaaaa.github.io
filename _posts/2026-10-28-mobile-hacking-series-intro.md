@@ -1,8 +1,9 @@
 ---
 title: "Mobile Hacking Series - Intro"
 date: 2026-10-28
-categories: [Mobile Hacking]
+categories: [Mobile Hacking, Mobile Intro]
 tags: [android, ios, mobile]
+pin: true
 ---
 
 I have spent some time learning mobile application security, and this is an introductory post where I'll be posting my writeups as I go along the way.

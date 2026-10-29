@@ -1,7 +1,7 @@
 ---
 title: "Azure & Entra ID Security - Start Here"
 date: 2026-05-13 00:00:00 +0000
-categories: [Azure, Intro]
+categories: [Azure, Azure Intro]
 tags: [azure, entra-id, pentesting, overview]
 pin: true
 ---
