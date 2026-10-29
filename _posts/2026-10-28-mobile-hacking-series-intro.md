@@ -1,6 +1,6 @@
 ---
 title: "Mobile Hacking Series - Intro"
-date: 2026-10-28
+date: 2026-10-28 00:00:00 +0000
 categories: [Mobile Hacking, Mobile Intro]
 tags: [android, ios, mobile]
 pin: true
