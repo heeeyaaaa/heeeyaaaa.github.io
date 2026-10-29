@@ -2,7 +2,7 @@
 title: "HTB Devarea walkthrough"
 date: 2026-03-29
 categories: [HTB, Season 10]
-tags:  [ CVE-2022-46364, CVE-2025-54123, command injection, symlink abuse,]
+tags:  [ CVE-2022-46364, CVE-2025-54123, command-injection, symlink abuse,]
 ---
 
 

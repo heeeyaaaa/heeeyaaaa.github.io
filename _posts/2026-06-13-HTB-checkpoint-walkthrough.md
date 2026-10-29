@@ -2,7 +2,7 @@
 title: "HTB checkpoint walkthrough"
 date: 2026-06-13
 categories: [HTB, Season 11]
-tags:  [ VS Code, vsix, RCE, BadSuccessor]
+tags:  [ VS Code, vsix, rce, BadSuccessor]
 
 ---
 
