@@ -1,5 +1,6 @@
 ---
 title: "BadZure: Managed Identity Abuse via Logic App"
+description: "Logic App Contributor rewrites a workflow to use its managed identity, pulls service principal credentials out of blob storage and reaches Global Administrator."
 date: 2026-05-14 00:03:00 +0000
 categories: [Azure, Pentesting]
 tags: [azure, managed-identity, logic-app, badzure, credential-injection, storage]

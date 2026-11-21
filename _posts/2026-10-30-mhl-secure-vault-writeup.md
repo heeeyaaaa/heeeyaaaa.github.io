@@ -1,5 +1,6 @@
 ---
 title: "MHL Secure Vault Writeup"
+description: "A javascript: URL with a fake host passes the deep link allowlist and calls a WebView JavaScript bridge that returns a secret token."
 date: 2026-10-30
 categories: [Mobile Hacking, Android]
 tags: [android, mobile-hacking-lab, deep-link, exported-activity, webview, javascript-interface, url-validation]

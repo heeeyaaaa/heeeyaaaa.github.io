@@ -1,5 +1,6 @@
 ---
 title: "BadZure: Managed Identity Abuse via Function App (Flex Consumption)"
+description: "Website Contributor on a Function App deploys code that runs as its managed identity, reads a certificate from Key Vault and leads to Global Administrator."
 date: 2026-05-14 00:04:00 +0000
 categories: [Azure, Pentesting]
 tags: [azure, managed-identity, function-app, flex-consumption, badzure, key-vault, imds]

@@ -1,5 +1,6 @@
 ---
 title: "BadZure: Application Administrator via Group Membership"
+description: "Membership in a role-assignable group grants Application Administrator, which is enough to take over a service principal and reach Global Administrator."
 date: 2026-05-14 00:00:00 +0000
 categories: [Azure, Pentesting]
 tags: [azure, entra-id, application-administrator, badzure, credential-injection, group-membership]

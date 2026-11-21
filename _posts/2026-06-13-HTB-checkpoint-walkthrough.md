@@ -1,8 +1,9 @@
 ---
-title: "HTB checkpoint walkthrough"
+title: "HTB Checkpoint Walkthrough"
+description: "Restoring a deleted AD user opens a share where a malicious VS Code extension runs as ryan.brooks, and BadSuccessor abuse gives Administrator."
 date: 2026-06-13
 categories: [HTB, Machines, Season 11]
-tags:  [ VS Code, vsix, rce, BadSuccessor]
+tags: [htb, vs-code, vsix, rce, badsuccessor]
 
 ---
 

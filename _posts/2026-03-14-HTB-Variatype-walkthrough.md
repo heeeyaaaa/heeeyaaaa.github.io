@@ -1,8 +1,9 @@
 ---
-title: "HTB Variatype walkthrough"
+title: "HTB Variatype Walkthrough"
+description: "An exposed .git leaks portal credentials, a fonttools path traversal plants a PHP webshell, a FontForge CVE gives a shell as steve, and a setuptools URL parsing bug in a root script gives root."
 date: 2026-03-14
 categories: [HTB, Machines, Season 10]
-tags:  [fonttools, CVE-2025-66034, CVE-2024-25082, CVE-2025-47273, path-traversal, php-webshell]
+tags: [htb, fonttools, cve-2025-66034, cve-2024-25082, cve-2025-47273, path-traversal, php-webshell]
 ---
 
 ## RECON

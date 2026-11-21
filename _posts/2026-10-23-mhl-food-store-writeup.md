@@ -1,5 +1,6 @@
 ---
 title: "MHL Food Store Writeup"
+description: "SQL injection in the signup query sets the isPro flag at registration and turns a normal account into a Pro account."
 date: 2026-10-23
 categories: [Mobile Hacking, Android]
 tags: [android, mobile-hacking-lab, sql-injection, sqlite, business-logic]

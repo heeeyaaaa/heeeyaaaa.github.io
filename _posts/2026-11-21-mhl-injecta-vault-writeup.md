@@ -1,5 +1,6 @@
 ---
 title: "MHL Injecta Vault Writeup"
+description: "NSPredicate injection returns the encrypted vault without valid credentials, and the 4-digit PIN used as the AES-GCM key falls to an offline brute force."
 date: 2026-11-21 00:00:00 +0000
 categories: [Mobile Hacking, iOS]
 tags: [ios, mobile-hacking-lab, ctf, mhc-ctf-2026, nspredicate, injection, aes-gcm, cryptokit, brute-force, swift, ghidra, ffuf, reverse-engineering]

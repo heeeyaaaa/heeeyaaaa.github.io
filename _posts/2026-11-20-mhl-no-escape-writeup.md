@@ -1,5 +1,6 @@
 ---
 title: "MHL No Escape Writeup"
+description: "Bypassing jailbreak detection with Frida twice: once by hooking the app's own checks, once by hooking the system APIs they rely on."
 date: 2026-11-20 12:00:00 +0000
 categories: [Mobile Hacking, iOS]
 tags: [ios, mobile-hacking-lab, jailbreak-detection, frida, ghidra, swift, reverse-engineering]

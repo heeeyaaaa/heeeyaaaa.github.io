@@ -1,5 +1,6 @@
 ---
 title: "MHL Time Trap Writeup"
+description: "A weak password lets an attacker plant a check-out record that the victim's own app runs as a shell command on their iPhone."
 date: 2026-11-19 12:00:00 +0000
 categories: [Mobile Hacking, iOS]
 tags: [ios, mobile-hacking-lab, command-injection, brute-force, jwt, keychain, code-signing, swift, ghidra, radare2, burp, reverse-engineering]

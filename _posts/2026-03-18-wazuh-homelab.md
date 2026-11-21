@@ -1,5 +1,6 @@
 ---
-title: System monitoring with Wazuh
+title: "System Monitoring with Wazuh"
+description: "Setting up Wazuh on a personal Linux machine with auditd command tracking, file integrity monitoring, custom detection rules and Discord alerts."
 date: 2026-03-18
 categories: [Homelab, Setup]
 tags: [wazuh, siem, auditd, docker, arch-linux, monitoring]

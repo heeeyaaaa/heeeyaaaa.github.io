@@ -1,5 +1,6 @@
 ---
 title: "MHL Flipcoin Wallet Writeup"
+description: "One tapped flipcoin:// link triggers SQL injection that sends the stored wallet recovery key to an attacker's server."
 date: 2026-11-18 00:00:00 +0000
 categories: [Mobile Hacking, iOS]
 tags: [ios, mobile-hacking-lab, deep-link, sql-injection, sqlite, exfiltration, swift, radare2, reverse-engineering]

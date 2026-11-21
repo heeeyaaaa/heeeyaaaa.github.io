@@ -1,8 +1,8 @@
 ---
-title: "HTB Fruitzy sherlock walkthrough"
+title: "HTB Fruitzy Sherlock Walkthrough"
 date: 2026-04-30
 categories: [HTB, Sherlock]
-tags:  [sherlock, forensics, DFIR, windows]
+tags: [htb, sherlock, forensics, dfir, windows]
 
 ---
 

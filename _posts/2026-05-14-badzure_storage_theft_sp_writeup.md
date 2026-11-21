@@ -1,5 +1,6 @@
 ---
 title: "BadZure: Storage Certificate Theft via Service Principal"
+description: "A service principal with Storage Blob Data Reader downloads another service principal's certificate, signs in as it and takes over the tenant."
 date: 2026-05-14 00:02:00 +0000
 categories: [Azure, Pentesting]
 tags: [azure, storage, certificate-theft, badzure, managed-identity, service-principal]

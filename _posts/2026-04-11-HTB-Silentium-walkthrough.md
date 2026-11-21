@@ -1,5 +1,6 @@
 ---
-title: "HTB Silentium walkthrough"
+title: "HTB Silentium Walkthrough"
+description: "A Flowise password reset token leak and authenticated RCE land in a container, leaked credentials give SSH as ben, and a Gogs CVE-2025-8110 exploit gives root."
 date: 2026-04-11 
 categories: [HTB, Machines, Season 10]
 tags: [htb, flowise, gogs, cve-2025-58434, cve-2025-59528, cve-2025-8110, docker, linux]

@@ -1,5 +1,6 @@
 ---
 title: "BadZure: Cloud Application Administrator vs Application Administrator"
+description: "Cloud Application Administrator takes ownership of a service principal, adds a credential to it and reaches Global Administrator."
 date: 2026-05-14 00:01:00 +0000
 categories: [Azure, Pentesting]
 tags: [azure, entra-id, cloud-application-administrator, badzure, credential-injection]

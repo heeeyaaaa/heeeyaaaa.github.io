@@ -1,5 +1,6 @@
 ---
 title: "EntraGoat: Application Ownership Chain and Credential Bypass"
+description: "Hardcoded service principal credentials lead to ownership of a more privileged application, a new credential on it and the flag."
 date: 2026-05-14 00:06:00 +0000
 categories: [Azure, Pentesting]
 tags: [azure, entra-id, app-ownership, credential-injection, entragoat, service-principal]

@@ -1,5 +1,6 @@
 ---
 title: "MHL IOT Connect Writeup"
+description: "Exploiting an exported broadcast receiver and its weak key check to switch on every connected device without logging in."
 date: 2026-10-20
 categories: [Mobile Hacking, Android]
 tags: [android, mobile-hacking-lab, broadcast-receiver, exported-component, reverse-engineering, brute-force, adb]

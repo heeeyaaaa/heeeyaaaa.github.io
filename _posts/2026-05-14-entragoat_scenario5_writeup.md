@@ -1,5 +1,6 @@
 ---
 title: "EntraGoat: Dynamic Administrative Unit Poisoning via PIM Group Ownership"
+description: "Activating PIM ownership of a group grants a scoped Privileged Authentication Administrator role, which issues a Temporary Access Pass for a privileged account."
 date: 2026-05-14 00:05:00 +0000
 categories: [Azure, Pentesting]
 tags: [azure, entra-id, administrative-unit, pim, tap, entragoat, dynamic-membership]

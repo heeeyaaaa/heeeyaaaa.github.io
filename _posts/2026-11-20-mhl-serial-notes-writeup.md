@@ -1,5 +1,6 @@
 ---
 title: "MHL Serial Notes Writeup"
+description: "Opening a crafted note file triggers insecure NSKeyedUnarchiver deserialization and a command injection that runs shell commands on the device."
 date: 2026-11-20 00:00:00 +0000
 categories: [Mobile Hacking, iOS]
 tags: [ios, mobile-hacking-lab, react-native, hermes, deserialization, nskeyedunarchiver, command-injection, swift, radare2, ghidra, reverse-engineering]

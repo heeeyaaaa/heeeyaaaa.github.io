@@ -1,5 +1,6 @@
 ---
 title: "MHL Guess Me Writeup"
+description: "A weak deep link URL check loads an attacker page into a WebView whose JavaScript bridge passes input straight to Runtime.exec()."
 date: 2026-10-24
 categories: [Mobile Hacking, Android]
 tags: [android, mobile-hacking-lab, deep-link, exported-activity, webview, javascript-interface, url-validation, rce]

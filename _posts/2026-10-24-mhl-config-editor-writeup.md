@@ -1,5 +1,6 @@
 ---
 title: "MHL Config Editor Writeup"
+description: "An exported activity feeds remote YAML to SnakeYAML's default constructor, giving code execution through deserialization."
 date: 2026-10-24
 categories: [Mobile Hacking, Android]
 tags: [android, mobile-hacking-lab, exported-activity, snakeyaml, yaml, deserialization, rce]

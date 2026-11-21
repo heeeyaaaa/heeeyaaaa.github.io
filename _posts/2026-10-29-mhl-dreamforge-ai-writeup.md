@@ -1,5 +1,6 @@
 ---
 title: "MHL DreamForge AI Writeup"
+description: "Getting past client-side prompt filters and certificate pinning with Frida to make an LLM backend leak its internal calibration key."
 date: 2026-10-29
 categories: [Mobile Hacking, Android]
 tags: [android, mobile-hacking-lab, frida, prompt-injection, llm, certificate-pinning, hardcoded-secrets]
